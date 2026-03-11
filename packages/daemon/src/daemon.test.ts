@@ -320,3 +320,139 @@ describe("Daemon.switchMode()", () => {
     expect(daemon.getStatus().mode).toBe("full-gateway");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Device discovery tests
+// ---------------------------------------------------------------------------
+
+import type { LanDevice } from "@homelan/shared";
+
+const FIXTURE_DEVICES: LanDevice[] = [
+  { ip: "192.168.7.102", hostname: "mac-mini.local", deviceType: "Mac Mini" },
+  { ip: "192.168.7.152", hostname: "Amazon-FireTV-123.local", deviceType: "Fire TV" },
+];
+
+describe("Daemon device discovery", () => {
+  it("getLanDevices() returns empty array initially", () => {
+    const keystore = makeTmpKeystore();
+    const stateMachine = new StateMachine();
+    const daemon = new Daemon(keystore, stateMachine);
+    expect(daemon.getLanDevices()).toEqual([]);
+  });
+
+  it("startDeviceDiscovery() with mock scanner populates getLanDevices()", async () => {
+    const keystore = makeTmpKeystore();
+    const stateMachine = new StateMachine();
+
+    let resolveFirstScan: () => void;
+    const firstScanDone = new Promise<void>((res) => { resolveFirstScan = res; });
+
+    const mockScanner = async () => {
+      const devices = [...FIXTURE_DEVICES];
+      resolveFirstScan!();
+      return devices;
+    };
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      undefined, undefined, undefined, undefined, undefined, undefined,
+      mockScanner,
+      100_000 // long interval — won't fire again in test
+    );
+
+    daemon.startDeviceDiscovery();
+    await firstScanDone;
+
+    expect(daemon.getLanDevices()).toEqual(FIXTURE_DEVICES);
+  });
+
+  it("stopDeviceDiscovery() clears device list and stops timer", async () => {
+    const keystore = makeTmpKeystore();
+    const stateMachine = new StateMachine();
+
+    let resolveFirstScan: () => void;
+    const firstScanDone = new Promise<void>((res) => { resolveFirstScan = res; });
+
+    const mockScanner = async () => {
+      resolveFirstScan!();
+      return [...FIXTURE_DEVICES];
+    };
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      undefined, undefined, undefined, undefined, undefined, undefined,
+      mockScanner,
+      100_000
+    );
+
+    daemon.startDeviceDiscovery();
+    await firstScanDone;
+
+    expect(daemon.getLanDevices()).toHaveLength(2);
+
+    daemon.stopDeviceDiscovery();
+    expect(daemon.getLanDevices()).toEqual([]);
+  });
+
+  it("device listener fires when device list changes between scans", async () => {
+    const keystore = makeTmpKeystore();
+    const stateMachine = new StateMachine();
+    const events: LanDevice[][] = [];
+
+    const mockScanner = async () => [...FIXTURE_DEVICES];
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      undefined, undefined, undefined, undefined, undefined, undefined,
+      mockScanner,
+      0 // interval 0 — runs immediately but then only on setInterval
+    );
+
+    daemon.onDevicesUpdate((devices) => events.push(devices));
+
+    // Start discovery — initial scan fires immediately (async)
+    daemon.startDeviceDiscovery();
+
+    // Wait for the async scan to complete
+    await new Promise<void>((res) => setTimeout(res, 50));
+
+    expect(events).toHaveLength(1);
+    expect(events[0]).toEqual(FIXTURE_DEVICES);
+
+    daemon.stopDeviceDiscovery();
+  });
+
+  it("device listener does NOT fire when list is unchanged between scans", async () => {
+    const keystore = makeTmpKeystore();
+    const stateMachine = new StateMachine();
+    const events: LanDevice[][] = [];
+    let callCount = 0;
+
+    const mockScanner = async () => {
+      callCount++;
+      return [...FIXTURE_DEVICES]; // always same result
+    };
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      undefined, undefined, undefined, undefined, undefined, undefined,
+      mockScanner,
+      10 // 10ms interval — will fire a few times
+    );
+
+    daemon.onDevicesUpdate((devices) => events.push(devices));
+    daemon.startDeviceDiscovery();
+
+    // Wait long enough for multiple scans
+    await new Promise<void>((res) => setTimeout(res, 80));
+    daemon.stopDeviceDiscovery();
+
+    // Multiple scans ran but listener should only fire once (first change)
+    expect(callCount).toBeGreaterThanOrEqual(2);
+    expect(events).toHaveLength(1); // only first scan triggers event
+  });
+});

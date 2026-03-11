@@ -5,6 +5,7 @@ import { connectCommand } from "./commands/connect.js";
 import { disconnectCommand } from "./commands/disconnect.js";
 import { statusCommand } from "./commands/status.js";
 import { switchModeCommand } from "./commands/switchMode.js";
+import { devicesCommand } from "./commands/devices.js";
 
 // Read version from package.json
 const require = createRequire(import.meta.url);
@@ -21,5 +22,6 @@ program.addCommand(connectCommand());
 program.addCommand(disconnectCommand());
 program.addCommand(statusCommand());
 program.addCommand(switchModeCommand());
+program.addCommand(devicesCommand());
 
 await program.parseAsync(process.argv);

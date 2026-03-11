@@ -15,6 +15,7 @@ import { attemptHolePunch } from "./nat/holePunch.js";
 import { WireGuardInterface, type WgInterfaceConfig } from "./wireguard/interface.js";
 import { createDnsConfigurator, type DnsConfigurator } from "./platform/dns.js";
 import { createIPv6Blocker, type IPv6Blocker } from "./platform/ipv6.js";
+import { scanLanDevices } from "./platform/arp.js";
 
 export type StunResolverFn = typeof resolveExternalEndpoint;
 export type RelayClientFactory = (opts: {
@@ -23,9 +24,11 @@ export type RelayClientFactory = (opts: {
   publicKey: string;
 }) => Pick<RelayClient, "register" | "lookup" | "startAutoRenew">;
 export type HolePunchFn = typeof attemptHolePunch;
+export type LanScannerFn = typeof scanLanDevices;
 
 type ProgressListener = (progress: ConnectionProgress) => void;
 type ModeListener = (mode: TunnelMode) => void;
+type DevicesListener = (devices: LanDevice[]) => void;
 
 /**
  * Daemon orchestrator — wires keychain + state machine together.
@@ -38,6 +41,9 @@ export class Daemon {
   private _wgConfig: WgInterfaceConfig | null = null;
   private _progressListeners: ProgressListener[] = [];
   private _modeListeners: ModeListener[] = [];
+  private _lanDevices: LanDevice[] = [];
+  private _discoveryTimer: NodeJS.Timeout | null = null;
+  private _deviceListeners: DevicesListener[] = [];
 
   constructor(
     private readonly keychain: KeychainStore = getKeychain(),
@@ -48,7 +54,9 @@ export class Daemon {
     private readonly holePunchFn: HolePunchFn = attemptHolePunch,
     private readonly wgInterface: WireGuardInterface = new WireGuardInterface("homelan"),
     private readonly dnsConfigurator: DnsConfigurator = createDnsConfigurator(),
-    private readonly ipv6Blocker: IPv6Blocker = createIPv6Blocker()
+    private readonly ipv6Blocker: IPv6Blocker = createIPv6Blocker(),
+    private readonly lanScanner: LanScannerFn = scanLanDevices,
+    private readonly discoveryIntervalMs: number = 30_000
   ) {}
 
   async start(): Promise<void> {
@@ -169,6 +177,7 @@ export class Daemon {
       this._mode = config.mode;
       this.stateMachine.transition("connected");
       this.emitProgress("connected");
+      this.startDeviceDiscovery();
     } catch (err) {
       // On failure, try to transition to error state
       try {
@@ -202,6 +211,7 @@ export class Daemon {
 
     this._mode = null;
     this._wgConfig = null;
+    this.stopDeviceDiscovery();
     this.stateMachine.transition("idle");
   }
 
@@ -291,6 +301,50 @@ export class Daemon {
     }
   }
 
+  /**
+   * Start polling for LAN devices via ARP table scanning.
+   * Runs an immediate scan, then repeats on discoveryIntervalMs.
+   * Emits device listeners when the list changes.
+   */
+  startDeviceDiscovery(): void {
+    if (this._discoveryTimer) return; // already running
+
+    const scan = async () => {
+      const newDevices = await this.lanScanner();
+      const changed = JSON.stringify(newDevices) !== JSON.stringify(this._lanDevices);
+      this._lanDevices = newDevices;
+      if (changed) {
+        for (const fn of this._deviceListeners) fn(newDevices);
+      }
+    };
+
+    // Run immediately, then on interval
+    void scan();
+    this._discoveryTimer = setInterval(() => void scan(), this.discoveryIntervalMs);
+  }
+
+  /**
+   * Stop device discovery polling and clear device list.
+   */
+  stopDeviceDiscovery(): void {
+    if (this._discoveryTimer) {
+      clearInterval(this._discoveryTimer);
+      this._discoveryTimer = null;
+    }
+    this._lanDevices = [];
+  }
+
+  /**
+   * Register a listener for device list update events.
+   * Returns an unsubscribe function.
+   */
+  onDevicesUpdate(fn: DevicesListener): () => void {
+    this._deviceListeners.push(fn);
+    return () => {
+      this._deviceListeners = this._deviceListeners.filter((l) => l !== fn);
+    };
+  }
+
   getStatus(): IpcStatusResponse {
     return {
       state: this.stateMachine.state,
@@ -299,13 +353,13 @@ export class Daemon {
       throughputBytesPerSec: null,
       hostInfo: null,
       connectedPeers: [],
-      lanDevices: [],
+      lanDevices: this._lanDevices,
       uptimeMs: this.uptimeMs,
     };
   }
 
   getLanDevices(): LanDevice[] {
-    return [];
+    return this._lanDevices;
   }
 
   get state(): ConnectionState {
