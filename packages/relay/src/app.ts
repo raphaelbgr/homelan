@@ -5,6 +5,7 @@ import { registerRouter } from "./routes/register.js";
 import { lookupRouter } from "./routes/lookup.js";
 import { httpsOnlyMiddleware } from "./middleware/httpsOnly.js";
 import { rateLimitMiddleware } from "./middleware/rateLimit.js";
+export { createRelayHandler } from "./routes/relay.js";
 
 export function createApp(config: RelayConfig, store: PeerStore): Express {
   const app = express();
