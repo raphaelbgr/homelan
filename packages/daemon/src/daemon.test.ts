@@ -152,3 +152,171 @@ describe("Daemon", () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// switchMode() tests
+// ---------------------------------------------------------------------------
+
+import type { WgInterfaceConfig } from "./wireguard/interface.js";
+import type { TunnelMode } from "@homelan/shared";
+
+function makeConnectedDaemon() {
+  const keystore = makeTmpKeystore();
+  const stateMachine = new StateMachine();
+
+  // Track configure() calls
+  const configureCalls: WgInterfaceConfig[] = [];
+  const upCalls: number[] = [];
+
+  const mockWgInterface = {
+    configure: (cfg: WgInterfaceConfig) => { configureCalls.push(cfg); },
+    up: async () => { upCalls.push(1); },
+    down: async () => {},
+  };
+
+  const dnsSetCalls: Array<{ iface: string; dns: string }> = [];
+  const dnsRestoreCalls: string[] = [];
+
+  const mockDns = {
+    setDns: async (iface: string, dns: string) => { dnsSetCalls.push({ iface, dns }); },
+    restoreDns: async (iface: string) => { dnsRestoreCalls.push(iface); },
+  };
+
+  const mockIpv6 = {
+    blockIPv6: async () => {},
+    restoreIPv6: async () => {},
+  };
+
+  const daemon = new Daemon(
+    keystore,
+    stateMachine,
+    undefined, // stunResolver - not used in switchMode
+    undefined, // relayClientFactory - not used in switchMode
+    undefined, // holePunchFn - not used in switchMode
+    mockWgInterface as unknown as import("./wireguard/interface.js").WireGuardInterface,
+    mockDns as unknown as import("./platform/dns.js").DnsConfigurator,
+    mockIpv6 as unknown as import("./platform/ipv6.js").IPv6Blocker,
+  );
+
+  // Manually set daemon to "connected" state with a known wgConfig
+  // by forcing the state machine
+  stateMachine.transition("connecting");
+  stateMachine.transition("connected");
+
+  return { daemon, stateMachine, configureCalls, upCalls, dnsSetCalls, dnsRestoreCalls };
+}
+
+describe("Daemon.switchMode()", () => {
+  it("throws 'Not connected' when state is not connected", async () => {
+    const keystore = makeTmpKeystore();
+    const stateMachine = new StateMachine();
+    const daemon = new Daemon(keystore, stateMachine);
+    await expect(daemon.switchMode("full-gateway")).rejects.toThrow("Not connected");
+  });
+
+  it("is a no-op when mode is already the requested mode", async () => {
+    const { daemon, configureCalls } = makeConnectedDaemon();
+    // Set internal mode by injecting via a private field test helper —
+    // we manually call setModeForTest to simulate post-connect state
+    (daemon as unknown as { _mode: TunnelMode })._mode = "lan-only";
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer-key", endpoint: "1.2.3.4:51820", allowedIps: ["10.0.0.0/24", "192.168.7.0/24"] }],
+    };
+    await daemon.switchMode("lan-only"); // same mode
+    expect(configureCalls).toHaveLength(0); // no reconfiguration
+  });
+
+  it("switches from lan-only to full-gateway: reconfigures AllowedIPs and calls setDns", async () => {
+    const { daemon, configureCalls, upCalls, dnsSetCalls } = makeConnectedDaemon();
+    (daemon as unknown as { _mode: TunnelMode })._mode = "lan-only";
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer-key", endpoint: "1.2.3.4:51820", allowedIps: ["10.0.0.0/24", "192.168.7.0/24"] }],
+    };
+
+    await daemon.switchMode("full-gateway");
+
+    expect(configureCalls).toHaveLength(1);
+    expect(configureCalls[0]!.peers[0]!.allowedIps).toEqual(["0.0.0.0/0", "::/0"]);
+    expect(upCalls).toHaveLength(1);
+    expect(dnsSetCalls).toHaveLength(1);
+    expect(dnsSetCalls[0]).toEqual({ iface: "homelan", dns: "192.168.7.1" });
+    expect((daemon as unknown as { _mode: TunnelMode })._mode).toBe("full-gateway");
+  });
+
+  it("switches from full-gateway to lan-only: reconfigures AllowedIPs and calls restoreDns", async () => {
+    const { daemon, configureCalls, upCalls, dnsRestoreCalls } = makeConnectedDaemon();
+    (daemon as unknown as { _mode: TunnelMode })._mode = "full-gateway";
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer-key", endpoint: "1.2.3.4:51820", allowedIps: ["0.0.0.0/0", "::/0"] }],
+    };
+
+    await daemon.switchMode("lan-only");
+
+    expect(configureCalls).toHaveLength(1);
+    expect(configureCalls[0]!.peers[0]!.allowedIps).toEqual(["10.0.0.0/24", "192.168.7.0/24"]);
+    expect(upCalls).toHaveLength(1);
+    expect(dnsRestoreCalls).toHaveLength(1);
+    expect(dnsRestoreCalls[0]).toBe("homelan");
+    expect((daemon as unknown as { _mode: TunnelMode })._mode).toBe("lan-only");
+  });
+
+  it("emits mode_changed event via onModeChange listener", async () => {
+    const { daemon } = makeConnectedDaemon();
+    (daemon as unknown as { _mode: TunnelMode })._mode = "lan-only";
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer-key", endpoint: "1.2.3.4:51820", allowedIps: ["10.0.0.0/24", "192.168.7.0/24"] }],
+    };
+
+    const modeEvents: TunnelMode[] = [];
+    daemon.onModeChange((mode) => modeEvents.push(mode));
+
+    await daemon.switchMode("full-gateway");
+
+    expect(modeEvents).toHaveLength(1);
+    expect(modeEvents[0]).toBe("full-gateway");
+  });
+
+  it("onModeChange returns an unsubscribe function", async () => {
+    const { daemon } = makeConnectedDaemon();
+    (daemon as unknown as { _mode: TunnelMode })._mode = "lan-only";
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer-key", endpoint: "1.2.3.4:51820", allowedIps: ["10.0.0.0/24", "192.168.7.0/24"] }],
+    };
+
+    const modeEvents: TunnelMode[] = [];
+    const unsub = daemon.onModeChange((mode) => modeEvents.push(mode));
+    unsub();
+
+    await daemon.switchMode("full-gateway");
+    expect(modeEvents).toHaveLength(0);
+  });
+
+  it("updates _mode after switchMode completes", async () => {
+    const { daemon } = makeConnectedDaemon();
+    (daemon as unknown as { _mode: TunnelMode })._mode = "lan-only";
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer-key", endpoint: "1.2.3.4:51820", allowedIps: ["10.0.0.0/24", "192.168.7.0/24"] }],
+    };
+
+    await daemon.switchMode("full-gateway");
+    expect(daemon.getStatus().mode).toBe("full-gateway");
+  });
+});

@@ -25,6 +25,7 @@ export type RelayClientFactory = (opts: {
 export type HolePunchFn = typeof attemptHolePunch;
 
 type ProgressListener = (progress: ConnectionProgress) => void;
+type ModeListener = (mode: TunnelMode) => void;
 
 /**
  * Daemon orchestrator — wires keychain + state machine together.
@@ -34,7 +35,9 @@ export class Daemon {
   private _startedAt = 0;
   private _publicKey: string | null = null;
   private _mode: TunnelMode | null = null;
+  private _wgConfig: WgInterfaceConfig | null = null;
   private _progressListeners: ProgressListener[] = [];
+  private _modeListeners: ModeListener[] = [];
 
   constructor(
     private readonly keychain: KeychainStore = getKeychain(),
@@ -148,6 +151,7 @@ export class Daemon {
       };
 
       this.wgInterface.configure(wgConfig);
+      this._wgConfig = wgConfig;
       await this.wgInterface.up();
 
       // Apply DNS and IPv6 rules after WireGuard is up.
@@ -197,7 +201,77 @@ export class Daemon {
     }
 
     this._mode = null;
+    this._wgConfig = null;
     this.stateMachine.transition("idle");
+  }
+
+  /**
+   * Switches tunnel mode (Full Gateway ↔ LAN-Only) without tearing down the WireGuard tunnel.
+   * Reconfigures AllowedIPs and DNS settings live.
+   */
+  async switchMode(newMode: TunnelMode): Promise<void> {
+    if (this.stateMachine.state !== "connected") {
+      throw new Error("Not connected — cannot switch mode while not connected");
+    }
+
+    // No-op if already in the requested mode
+    if (this._mode === newMode) {
+      return;
+    }
+
+    if (!this._wgConfig) {
+      throw new Error("WireGuard config not available — cannot switch mode");
+    }
+
+    // Determine new AllowedIPs based on mode
+    const newAllowedIps =
+      newMode === "full-gateway"
+        ? ["0.0.0.0/0", "::/0"]
+        : ["10.0.0.0/24", "192.168.7.0/24"];
+
+    // Reconfigure WireGuard with updated AllowedIPs
+    const updatedConfig: WgInterfaceConfig = {
+      ...this._wgConfig,
+      peers: this._wgConfig.peers.map((peer) => ({
+        ...peer,
+        allowedIps: newAllowedIps,
+      })),
+    };
+
+    this.wgInterface.configure(updatedConfig);
+    this._wgConfig = updatedConfig;
+    await this.wgInterface.up();
+
+    // Update DNS based on new mode
+    try {
+      if (newMode === "full-gateway") {
+        await this.dnsConfigurator.setDns("homelan", "192.168.7.1");
+      } else {
+        await this.dnsConfigurator.restoreDns("homelan");
+      }
+    } catch (policyErr) {
+      console.warn("[daemon] DNS policy update failed during mode switch (tunnel still up):", policyErr);
+    }
+
+    this._mode = newMode;
+    this.emitModeChange(newMode);
+  }
+
+  /**
+   * Register a listener for mode change events.
+   * Returns an unsubscribe function.
+   */
+  onModeChange(fn: ModeListener): () => void {
+    this._modeListeners.push(fn);
+    return () => {
+      this._modeListeners = this._modeListeners.filter((l) => l !== fn);
+    };
+  }
+
+  private emitModeChange(mode: TunnelMode): void {
+    for (const fn of this._modeListeners) {
+      fn(mode);
+    }
   }
 
   /**
