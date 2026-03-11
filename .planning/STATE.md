@@ -298,3 +298,15 @@ Overall: 25/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - disconnect(): restoreIPv6 + restoreDns unconditionally (safe no-op in lan-only)
 - 86 tests passing (78 prior + 5 platform + 3 daemon wiring), TypeScript build zero errors
 - Completed requirements: TUNL-05, TUNL-06, TUNL-08, TUNL-09
+
+---
+
+**2026-03-11 - Plan 02-05 Execution (4 min)**
+- Built IpcClient class using native fetch (Node.js 22): get<T>(), post<T>(), isRunning() with ECONNREFUSED detection
+- IpcClientError extends Error with statusCode: number | null (null for connection refused, HTTP code for HTTP errors)
+- connectCommand(): daemon check (exit 3), ora spinner, POST /connect, 500ms polling loop, --retry, exit 0/1/2/3
+- disconnectCommand(): daemon check, POST /disconnect, --json flag, exit 0/1/3
+- statusCommand(): GET /status, JSON default (no flag), --human prints aligned key-value table with uptime formatting
+- index.ts: Commander.js entry point with #!/usr/bin/env node shebang, addCommand x3
+- 4 IpcClient tests passing, TypeScript build zero errors
+- Completed requirements: TUNL-02, TUNL-03, CLI-01, CLI-02, CLI-03, CLI-06, CLI-07

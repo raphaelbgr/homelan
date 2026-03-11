@@ -8,8 +8,8 @@
 ### Tunnel Core
 
 - [x] **TUNL-01**: Client establishes encrypted WireGuard P2P tunnel to home server
-- [ ] **TUNL-02**: User can connect to home network from CLI (`homelan connect`)
-- [ ] **TUNL-03**: User can disconnect from home network from CLI (`homelan disconnect`)
+- [x] **TUNL-02**: User can connect to home network from CLI (`homelan connect`)
+- [x] **TUNL-03**: User can disconnect from home network from CLI (`homelan disconnect`)
 - [ ] **TUNL-04**: User can connect/disconnect from desktop GUI with one click
 - [x] **TUNL-05**: Full Gateway mode routes all traffic (LAN + internet) through home network
 - [x] **TUNL-06**: LAN-Only mode routes only home subnet traffic through tunnel, client keeps own internet
@@ -53,13 +53,13 @@
 
 ### CLI
 
-- [ ] **CLI-01**: `homelan connect [--mode full-gateway|lan-only]` command
-- [ ] **CLI-02**: `homelan disconnect` command
-- [ ] **CLI-03**: `homelan status` command with JSON output
+- [x] **CLI-01**: `homelan connect [--mode full-gateway|lan-only]` command
+- [x] **CLI-02**: `homelan disconnect` command
+- [x] **CLI-03**: `homelan status` command with JSON output
 - [ ] **CLI-04**: `homelan switch-mode <mode>` command
 - [ ] **CLI-05**: `homelan devices` command lists LAN devices with names and IPs
-- [ ] **CLI-06**: All CLI commands show progress and never hang silently
-- [ ] **CLI-07**: CLI has automatic retry with status reporting on failures
+- [x] **CLI-06**: All CLI commands show progress and never hang silently
+- [x] **CLI-07**: CLI has automatic retry with status reporting on failures
 
 ### Claude Code Integration
 
@@ -119,8 +119,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TUNL-01 | Phase 2 | Complete |
-| TUNL-02 | Phase 2 | Pending |
-| TUNL-03 | Phase 2 | Pending |
+| TUNL-02 | Phase 2 | Complete |
+| TUNL-03 | Phase 2 | Complete |
 | TUNL-04 | Phase 4 | Pending |
 | TUNL-05 | Phase 2 | Complete |
 | TUNL-06 | Phase 2 | Complete |
@@ -149,13 +149,13 @@
 | GUI-05 | Phase 4 | Pending |
 | GUI-06 | Phase 4 | Pending |
 | GUI-07 | Phase 4 | Pending |
-| CLI-01 | Phase 2 | Pending |
-| CLI-02 | Phase 2 | Pending |
-| CLI-03 | Phase 2 | Pending |
+| CLI-01 | Phase 2 | Complete |
+| CLI-02 | Phase 2 | Complete |
+| CLI-03 | Phase 2 | Complete |
 | CLI-04 | Phase 3 | Pending |
 | CLI-05 | Phase 3 | Pending |
-| CLI-06 | Phase 2 | Pending |
-| CLI-07 | Phase 2 | Pending |
+| CLI-06 | Phase 2 | Complete |
+| CLI-07 | Phase 2 | Complete |
 | CLDE-01 | Phase 5 | Pending |
 | CLDE-02 | Phase 5 | Pending |
 | CLDE-03 | Phase 5 | Pending |
