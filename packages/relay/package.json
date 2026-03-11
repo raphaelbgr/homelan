@@ -2,12 +2,27 @@
   "name": "@homelan/relay",
   "version": "0.1.0",
   "type": "module",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@homelan/shared": "workspace:*"
+    "@homelan/shared": "workspace:*",
+    "express": "^5.0.0",
+    "better-sqlite3": "^9.4",
+    "zod": "^3.22"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0",
+    "@types/better-sqlite3": "^7.6",
+    "@types/supertest": "^6.0",
+    "supertest": "^7.0",
+    "typescript": "^5.4",
+    "vitest": "^1",
+    "tsx": "^4"
   }
 }
