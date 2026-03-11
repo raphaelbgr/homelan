@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Relay & Daemon Foundation** - Relay server + daemon core infrastructure
+- [x] **Phase 1: Relay & Daemon Foundation** - Relay server + daemon core infrastructure (completed 2026-03-11)
 - [ ] **Phase 2: Tunnel Connectivity & NAT Traversal** - P2P tunnel + automatic discovery + CLI
 - [ ] **Phase 3: Mode Switching & Service Discovery** - Full Gateway/LAN-Only routing + device discovery
 - [ ] **Phase 4: Desktop GUI** - Tauri + React desktop client for Windows & macOS
@@ -34,7 +34,7 @@
 4. Relay server validates configuration at startup and fails fast with clear error messages (TLS cert, endpoints, required fields)
 5. Daemon generates new WireGuard keypairs on first run and can list them securely from keychain
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md — Monorepo scaffold + shared TypeScript contracts
@@ -126,7 +126,7 @@ Plans:
 
 | Phase | Goal | Requirements | Success Criteria | Plans Complete | Status |
 |-------|------|--------------|------------------|-----------------|--------|
-| 1 | 4/5 | In Progress|  | 0/5 | Planned |
+| 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
 | 2 | Tunnel + NAT + CLI | 17 | 6 | 0/? | Not started |
 | 3 | Mode Switching + Discovery | 6 | 4 | 0/? | Not started |
 | 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
