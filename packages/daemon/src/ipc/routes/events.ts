@@ -1,9 +1,9 @@
-import { Router } from "express";
+import { Router, type Router as ExpressRouter } from "express";
 import type { Daemon } from "../../daemon.js";
 import type { SseEvent } from "@homelan/shared";
 import type { ConnectionState } from "@homelan/shared";
 
-export function eventsRouter(daemon: Daemon) {
+export function eventsRouter(daemon: Daemon): ExpressRouter {
   const router = Router();
   router.get("/", (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");

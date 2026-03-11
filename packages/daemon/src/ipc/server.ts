@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Express } from "express";
 import type { Daemon } from "../daemon.js";
 import { statusRouter } from "./routes/status.js";
 import { devicesRouter } from "./routes/devices.js";
@@ -7,13 +7,13 @@ import { connectRouter } from "./routes/connect.js";
 import { disconnectRouter } from "./routes/disconnect.js";
 import { switchModeRouter } from "./routes/switchMode.js";
 
-export type IpcServer = ReturnType<typeof createIpcServer>;
+export type IpcServer = Express;
 
 /**
  * Creates the Express IPC server for the daemon.
  * Security: only accepts connections from localhost (127.0.0.1 / ::1).
  */
-export function createIpcServer(daemon: Daemon) {
+export function createIpcServer(daemon: Daemon): Express {
   const app = express();
   app.use(express.json());
 
