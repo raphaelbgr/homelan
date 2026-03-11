@@ -87,7 +87,7 @@ Plans:
 3. Device list updates automatically while connected (daemon polls home network for new/removed devices); user runs command multiple times and sees additions reflected
 4. Routing tables are correctly configured per mode: Full Gateway routes default 0.0.0.0/0 via tunnel except local subnet; LAN-Only routes only home subnet via tunnel
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md — Daemon.switchMode() + IPC /switch-mode route + homelan switch-mode CLI command
@@ -141,7 +141,7 @@ Plans:
 |-------|------|--------------|------------------|-----------------|--------|
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
-| 3 | Mode Switching + Discovery | 6 | 4 | 0/3 | Planning |
+| 3 | 1/3 | In Progress|  | 0/3 | Planning |
 | 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
 

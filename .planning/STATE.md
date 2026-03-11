@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 2 COMPLETE
-last_updated: "2026-03-11T20:39:55.712Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-11T20:53:36.913Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_plans: 14
+  completed_plans: 12
+  percent: 86
 ---
 
 # HomeLAN Project State
@@ -39,21 +39,21 @@ progress:
 
 ## Current Position
 
-**Milestone:** Phase 2 COMPLETE — Ready for Phase 3 or Phase 4
-**Active Phase:** 02-tunnel-connectivity-nat-traversal (COMPLETE)
-**Plan:** 02-06 COMPLETE — Phase gate verification (118 tests passing, CLI smoke tested)
-**Stopped At:** Phase 2 COMPLETE
+**Milestone:** Phase 3 In Progress
+**Active Phase:** 03-mode-switching-service-discovery
+**Plan:** 03-01 COMPLETE — Live mode switching (Daemon.switchMode, POST /switch-mode, homelan switch-mode CLI)
+**Stopped At:** Completed 03-01-PLAN.md
 
-**Progress:** [██████████] 100% (11/11 plans done)
+**Progress:** [█████████░] 86% (12/14 plans done)
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
 Phase 2: Tunnel + NAT + CLI             ██████████  Plan 6/6 done (COMPLETE)
-Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
+Phase 3: Mode Switching + Discovery     ███░░░░░░░  1/3 plans done (In Progress)
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 29/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..03, TUNL-05, TUNL-06, TUNL-08, TUNL-09, CLI-01, CLI-02, CLI-03, CLI-06, CLI-07)
+Overall: 31/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..03, TUNL-05..09, CLI-01..04, CLI-06, CLI-07)
 ```
 
 ---
@@ -110,6 +110,9 @@ Overall: 29/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | IpcClientError.statusCode null for ECONNREFUSED | Not an HTTP error; distinguishes connection refused from HTTP 4xx/5xx | 02-05 |
 | status outputs JSON by default (no flag) | --human flag activates table; JSON default enables scripting by Claude Code | 02-05 |
 | GUI placeholder build script uses echo no-op | tsc fails with no tsconfig/source files; GUI implemented in Phase 4 | 02-06 |
+| _wgConfig stored in Daemon after connect() | Enables live AllowedIPs reconfiguration via switchMode() without reconnect; cleared on disconnect() | 03-01 |
+| switchMode DNS failure is warning-only | Tunnel correctness over DNS enforcement; same pattern as connect() for consistency | 03-01 |
+| onModeChange() follows onProgress() listener pattern | Consistent event API (push array, return unsub fn) across all daemon event types | 03-01 |
 
 ---
 
@@ -322,3 +325,14 @@ Overall: 29/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Human checkpoint auto-approved (auto mode)
 - Phase 2 COMPLETE — all 17 requirements verified (TUNL-01..03, TUNL-05, TUNL-06, TUNL-08, TUNL-09, NAT-01..05, CLI-01, CLI-02, CLI-03, CLI-06, CLI-07)
 - Ready for Phase 3 (Mode Switching + Discovery) or Phase 4 (Desktop GUI) — both can proceed in parallel
+
+---
+
+**2026-03-11 - Plan 03-01 Execution (12 min)**
+- Implemented Daemon.switchMode(TunnelMode): live WireGuard AllowedIPs reconfiguration + DNS update without tunnel restart
+- Added _wgConfig field stored after connect(), cleared on disconnect(), used in switchMode() for peer reconfiguration
+- Added _modeListeners / onModeChange() / emitModeChange() following same pattern as _progressListeners
+- Replaced 501 stub in POST /switch-mode IPC route with real handler (400/409/200)
+- Added homelan switch-mode CLI command with mode validation, daemon check, --json flag
+- 11 new tests added; 125 total passing; zero TypeScript errors
+- Completed requirements: TUNL-07, CLI-04

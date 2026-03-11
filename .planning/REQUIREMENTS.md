@@ -13,7 +13,7 @@
 - [ ] **TUNL-04**: User can connect/disconnect from desktop GUI with one click
 - [x] **TUNL-05**: Full Gateway mode routes all traffic (LAN + internet) through home network
 - [x] **TUNL-06**: LAN-Only mode routes only home subnet traffic through tunnel, client keeps own internet
-- [ ] **TUNL-07**: User can switch between Full Gateway and LAN-Only modes without full reconnect
+- [x] **TUNL-07**: User can switch between Full Gateway and LAN-Only modes without full reconnect
 - [x] **TUNL-08**: DNS queries are routed correctly per mode (home DNS in Full Gateway, local DNS in LAN-Only)
 - [x] **TUNL-09**: IPv6 is disabled in tunnel to prevent IP leaks (v1)
 
@@ -56,7 +56,7 @@
 - [x] **CLI-01**: `homelan connect [--mode full-gateway|lan-only]` command
 - [x] **CLI-02**: `homelan disconnect` command
 - [x] **CLI-03**: `homelan status` command with JSON output
-- [ ] **CLI-04**: `homelan switch-mode <mode>` command
+- [x] **CLI-04**: `homelan switch-mode <mode>` command
 - [ ] **CLI-05**: `homelan devices` command lists LAN devices with names and IPs
 - [x] **CLI-06**: All CLI commands show progress and never hang silently
 - [x] **CLI-07**: CLI has automatic retry with status reporting on failures
@@ -124,7 +124,7 @@
 | TUNL-04 | Phase 4 | Pending |
 | TUNL-05 | Phase 2 | Complete |
 | TUNL-06 | Phase 2 | Complete |
-| TUNL-07 | Phase 3 | Pending |
+| TUNL-07 | Phase 3 | Complete |
 | TUNL-08 | Phase 2 | Complete |
 | TUNL-09 | Phase 2 | Complete |
 | NAT-01 | Phase 2 | Complete |
@@ -152,7 +152,7 @@
 | CLI-01 | Phase 2 | Complete |
 | CLI-02 | Phase 2 | Complete |
 | CLI-03 | Phase 2 | Complete |
-| CLI-04 | Phase 3 | Pending |
+| CLI-04 | Phase 3 | Complete |
 | CLI-05 | Phase 3 | Pending |
 | CLI-06 | Phase 2 | Complete |
 | CLI-07 | Phase 2 | Complete |
