@@ -27,10 +27,10 @@
 
 ### Relay Server
 
-- [ ] **RELY-01**: Self-hosted relay server with `/register` and `/lookup` HTTPS endpoints
-- [ ] **RELY-02**: Relay server deployable on Vercel, AWS Lambda, any VPS, or free-tier cloud
-- [ ] **RELY-03**: Relay validates config at startup and fails fast with clear errors
-- [ ] **RELY-04**: Relay communicates over HTTPS only (no plaintext)
+- [x] **RELY-01**: Self-hosted relay server with `/register` and `/lookup` HTTPS endpoints
+- [x] **RELY-02**: Relay server deployable on Vercel, AWS Lambda, any VPS, or free-tier cloud
+- [x] **RELY-03**: Relay validates config at startup and fails fast with clear errors
+- [x] **RELY-04**: Relay communicates over HTTPS only (no plaintext)
 
 ### Client Daemon
 
@@ -72,7 +72,7 @@
 
 - [x] **AUTH-01**: WireGuard key-pair based authentication (no user accounts)
 - [ ] **AUTH-02**: New client can onboard via QR code or one-time invite URL from server
-- [ ] **AUTH-03**: Key exchange happens securely via relay (HTTPS)
+- [x] **AUTH-03**: Key exchange happens securely via relay (HTTPS)
 - [ ] **AUTH-04**: First-time setup wizard in GUI guides user through key generation and server connection
 
 ### Service Discovery
@@ -132,10 +132,10 @@
 | NAT-03 | Phase 2 | Pending |
 | NAT-04 | Phase 2 | Pending |
 | NAT-05 | Phase 2 | Pending |
-| RELY-01 | Phase 1 | Pending |
-| RELY-02 | Phase 1 | Pending |
-| RELY-03 | Phase 1 | Pending |
-| RELY-04 | Phase 1 | Pending |
+| RELY-01 | Phase 1 | Complete |
+| RELY-02 | Phase 1 | Complete |
+| RELY-03 | Phase 1 | Complete |
+| RELY-04 | Phase 1 | Complete |
 | DAEM-01 | Phase 1 | Pending |
 | DAEM-02 | Phase 1 | Pending |
 | DAEM-03 | Phase 1 | Pending |
@@ -162,7 +162,7 @@
 | CLDE-04 | Phase 5 | Pending |
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 5 | Pending |
-| AUTH-03 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 5 | Pending |
 | DISC-01 | Phase 3 | Pending |
 | DISC-02 | Phase 3 | Pending |

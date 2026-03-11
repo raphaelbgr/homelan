@@ -3,13 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-11T19:14:26.118Z"
+stopped_at: Completed 01-relay-daemon-foundation/01-01-PLAN.md
+last_updated: "2026-03-11T19:25:04.143Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 40
 ---
 
 # HomeLAN Project State
@@ -38,21 +39,21 @@ progress:
 
 ## Current Position
 
-**Milestone:** Phase 1 Execution Started
+**Milestone:** Phase 1 Execution In Progress
 **Active Phase:** 01-relay-daemon-foundation
-**Plan:** 01-01 COMPLETE, advancing to 01-02
-**Stopped At:** Completed 01-relay-daemon-foundation/01-01-PLAN.md
+**Plan:** 01-02 COMPLETE, advancing to 01-03
+**Stopped At:** Completed 01-relay-daemon-foundation/01-02-PLAN.md
 
-**Progress:** [██░░░░░░░░] 20%
+**Progress:** [████░░░░░░] 40%
 
 ```
-Phase 1: Relay & Daemon Foundation       ██░░░░░░░░  Plan 1/5 done
+Phase 1: Relay & Daemon Foundation       ████░░░░░░  Plan 2/5 done
 Phase 2: Tunnel + NAT + CLI             ░░░░░░░░░░  0%
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 4/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01)
+Overall: 9/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01, RELY-01, RELY-02, RELY-03, RELY-04, AUTH-03)
 ```
 
 ---
@@ -81,6 +82,9 @@ Overall: 4/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01)
 | Plain pnpm workspaces over Turborepo/Nx | Sufficient for project size, no extra tooling overhead | 01-01 |
 | WireguardKeypair has no privateKey field | Private key never leaves daemon, enforced at type level | 01-01 |
 | IpcStatusResponse = DaemonStatus type alias | Daemon is single source of truth, no separate IPC schema drift | 01-01 |
+| createStore() async with dynamic import | Keeps better-sqlite3 native module out of serverless bundle for Vercel | 01-02 |
+| Hand-rolled rate limiter (no express-rate-limit) | Zero extra dependencies; trivial Map + timestamp logic sufficient | 01-02 |
+| httpsOnly skips in NODE_ENV=development | Local testing without TLS termination requires bypass | 01-02 |
 
 ---
 
@@ -185,7 +189,16 @@ Overall: 4/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01)
 - relay and daemon packages linked to shared via workspace:* dependency
 - Completed requirements: DAEM-04, DAEM-05, DAEM-06, AUTH-01
 
+**2026-03-11 - Plan 01-02 Execution (15 min)**
+- Built Express relay server with POST /register, GET /lookup/:publicKey, GET /health
+- Config validation via zod (fails fast on missing RELAY_SECRET, defaults for optional vars)
+- SQLiteStore (better-sqlite3) + MemoryStore backends with TTL-based expiry
+- httpsOnly middleware, in-memory rate limiter (100 req/min)
+- vercel.json + Dockerfile for serverless and VPS deployment
+- 18 tests passing across config, store, and route test suites
+- Completed requirements: RELY-01, RELY-02, RELY-03, RELY-04, AUTH-03
+
 ---
 
 *State initialized: 2026-03-11*
-*Last updated: 2026-03-11 after 01-01 execution*
+*Last updated: 2026-03-11 after 01-02 execution*
