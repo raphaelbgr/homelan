@@ -11,11 +11,11 @@
 - [ ] **TUNL-02**: User can connect to home network from CLI (`homelan connect`)
 - [ ] **TUNL-03**: User can disconnect from home network from CLI (`homelan disconnect`)
 - [ ] **TUNL-04**: User can connect/disconnect from desktop GUI with one click
-- [ ] **TUNL-05**: Full Gateway mode routes all traffic (LAN + internet) through home network
-- [ ] **TUNL-06**: LAN-Only mode routes only home subnet traffic through tunnel, client keeps own internet
+- [x] **TUNL-05**: Full Gateway mode routes all traffic (LAN + internet) through home network
+- [x] **TUNL-06**: LAN-Only mode routes only home subnet traffic through tunnel, client keeps own internet
 - [ ] **TUNL-07**: User can switch between Full Gateway and LAN-Only modes without full reconnect
-- [ ] **TUNL-08**: DNS queries are routed correctly per mode (home DNS in Full Gateway, local DNS in LAN-Only)
-- [ ] **TUNL-09**: IPv6 is disabled in tunnel to prevent IP leaks (v1)
+- [x] **TUNL-08**: DNS queries are routed correctly per mode (home DNS in Full Gateway, local DNS in LAN-Only)
+- [x] **TUNL-09**: IPv6 is disabled in tunnel to prevent IP leaks (v1)
 
 ### NAT Traversal & Discovery
 
@@ -122,11 +122,11 @@
 | TUNL-02 | Phase 2 | Pending |
 | TUNL-03 | Phase 2 | Pending |
 | TUNL-04 | Phase 4 | Pending |
-| TUNL-05 | Phase 2 | Pending |
-| TUNL-06 | Phase 2 | Pending |
+| TUNL-05 | Phase 2 | Complete |
+| TUNL-06 | Phase 2 | Complete |
 | TUNL-07 | Phase 3 | Pending |
-| TUNL-08 | Phase 2 | Pending |
-| TUNL-09 | Phase 2 | Pending |
+| TUNL-08 | Phase 2 | Complete |
+| TUNL-09 | Phase 2 | Complete |
 | NAT-01 | Phase 2 | Complete |
 | NAT-02 | Phase 2 | Complete |
 | NAT-03 | Phase 2 | Complete |

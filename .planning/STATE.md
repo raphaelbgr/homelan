@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-11T20:19:51.107Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-03-11T20:26:32.484Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_plans: 10
+  percent: 91
 ---
 
 # HomeLAN Project State
@@ -41,19 +41,19 @@ progress:
 
 **Milestone:** Phase 2 In Progress
 **Active Phase:** 02-tunnel-connectivity-nat-traversal
-**Plan:** 02-03 COMPLETE — Core tunnel connection logic (holePunch + Daemon.connect/disconnect + IPC routes)
-**Stopped At:** Completed 02-03-PLAN.md
+**Plan:** 02-05 COMPLETE — CLI package (IpcClient + connect/disconnect/status commands with Commander.js)
+**Stopped At:** Completed 02-05-PLAN.md
 
-**Progress:** [███████░░░] 73% (8/11 plans done)
+**Progress:** [█████████░] 91% (10/11 plans done)
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 5/5 done (COMPLETE)
-Phase 2: Tunnel + NAT + CLI             ███░░░░░░░  Plan 3/5 done (In Progress)
+Phase 2: Tunnel + NAT + CLI             █████████░  Plan 5/5 done (COMPLETE)
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 21/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01)
+Overall: 25/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01, TUNL-05, TUNL-06, TUNL-08, TUNL-09)
 ```
 
 ---
@@ -102,6 +102,13 @@ Overall: 21/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | holePunchFn injected into Daemon | Consistent with wgInterface injection pattern; enables unit-test isolation without module mocking | 02-03 |
 | IPC /connect reads config from env vars | RELAY_URL/RELAY_SECRET/PEER_PUBLIC_KEY from environment; simple for Phase 2 CLI | 02-03 |
 | Daemon transitions to error on connect() failure | Explicit error→idle reset path; callers (CLI/GUI) handle recovery | 02-03 |
+| Platform detection injectable via opts.platform | Enables cross-platform DNS/IPv6 tests on any OS without process.platform mocking | 02-04 |
+| DNS/IPv6 policy failures are warnings, not errors | WireGuard tunnel up is more important than enforced DNS/IPv6 in failure edge cases | 02-04 |
+| restoreDns called in both modes on disconnect | Safe no-op on lan-only where setDns was never called (netsh dhcp and networksetup empty are idempotent) | 02-04 |
+| ora@^8 for CLI spinner | ESM-native, zero additional transitive deps, de-facto standard for Node.js CLIs | 02-05 |
+| connect polls /status 500ms after POST /connect | Simpler than SSE parsing in CLI; SSE reserved for GUI (Phase 4) | 02-05 |
+| IpcClientError.statusCode null for ECONNREFUSED | Not an HTTP error; distinguishes connection refused from HTTP 4xx/5xx | 02-05 |
+| status outputs JSON by default (no flag) | --human flag activates table; JSON default enables scripting by Claude Code | 02-05 |
 
 ---
 
@@ -280,3 +287,14 @@ Overall: 21/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Fixed pre-existing TS strict errors in stun.ts buffer indexing
 - 78 tests passing (71 prior + 7 new), TypeScript build zero errors
 - Completed requirements: TUNL-01, NAT-01, NAT-02, NAT-03, NAT-05
+
+---
+
+**2026-03-11 - Plan 02-04 Execution (3 min)**
+- Created DnsConfigurator (dns.ts): setDns/restoreDns via netsh (win32) or networksetup (darwin); platform injectable for testability
+- Created IPv6Blocker (ipv6.ts): blockIPv6/restoreIPv6 per platform
+- Wired both into Daemon constructor (injectable defaults to real impls)
+- connect(): blockIPv6 always; setDns only in full-gateway mode; lan-only skips DNS (keeps existing resolver)
+- disconnect(): restoreIPv6 + restoreDns unconditionally (safe no-op in lan-only)
+- 86 tests passing (78 prior + 5 platform + 3 daemon wiring), TypeScript build zero errors
+- Completed requirements: TUNL-05, TUNL-06, TUNL-08, TUNL-09
