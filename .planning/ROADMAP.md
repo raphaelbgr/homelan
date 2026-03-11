@@ -34,7 +34,14 @@
 4. Relay server validates configuration at startup and fails fast with clear error messages (TLS cert, endpoints, required fields)
 5. Daemon generates new WireGuard keypairs on first run and can list them securely from keychain
 
-**Plans:** TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Monorepo scaffold + shared TypeScript contracts
+- [ ] 01-02-PLAN.md — Relay server (Express, register/lookup API, config validation, SQLite/memory store)
+- [ ] 01-03-PLAN.md — Daemon key management (OS keychain, WireGuard key gen, interface lifecycle, state machine)
+- [ ] 01-04-PLAN.md — Daemon IPC server (localhost:30001, REST endpoints, SSE events stream)
+- [ ] 01-05-PLAN.md — Integration verification checkpoint (full test suite + human smoke test)
 
 ---
 
@@ -119,7 +126,7 @@
 
 | Phase | Goal | Requirements | Success Criteria | Plans Complete | Status |
 |-------|------|--------------|------------------|-----------------|--------|
-| 1 | Relay & Daemon | 12 | 5 | 0/? | Not started |
+| 1 | Relay & Daemon | 12 | 5 | 0/5 | Planned |
 | 2 | Tunnel + NAT + CLI | 17 | 6 | 0/? | Not started |
 | 3 | Mode Switching + Discovery | 6 | 4 | 0/? | Not started |
 | 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
@@ -130,5 +137,6 @@
 ---
 
 *Roadmap created: 2026-03-11*
+*Last updated: 2026-03-11 after Phase 1 planning*
 *Granularity: Coarse (5 phases, 6-17 requirements per phase)*
 *Research-informed structure: Relay first (dependency), Daemon+NAT second (core functionality), Mode Switching third (differentiator), GUI fourth (visual layer), Onboarding+Fallback fifth (polish)*
