@@ -16,13 +16,13 @@ Seamlessly access home LAN resources (SMB shares, local services, devices) from 
 - ✓ Server component that runs flexibly (Windows, Linux VM, dedicated device) — Phase 1
 - ✓ WireGuard key-based authentication (no user accounts needed) — Phase 1
 - ✓ Connection status display (connected/disconnected, current mode, latency, throughput) — Phase 1 (IPC contract defined + daemon status endpoint)
+- ✓ WireGuard-based tunnel between client and server — Phase 2
+- ✓ CLI for programmatic/headless use (connect, disconnect, status) — Phase 2
+- ✓ Two connection modes: Full Gateway and LAN-Only (routing + DNS per mode) — Phase 2
 
 ### Active
 
-- [ ] Two connection modes: Full Gateway (LAN + internet via home) and LAN-Only (LAN access + client's own internet)
-- [ ] WireGuard-based tunnel between client and server
 - [ ] Cross-platform desktop GUI (Electron/Tauri) for Windows and macOS
-- [ ] CLI for programmatic/headless use (connect, disconnect, switch modes, status)
 - [ ] Claude Code skill definition for the CLI commands
 - [ ] Client onboarding: key generation and exchange via relay
 - [ ] Dynamic DNS support as secondary discovery method
@@ -64,4 +64,9 @@ Seamlessly access home LAN resources (SMB shares, local services, devices) from 
 | Private key never in IPC responses | Enforced at type level (WireguardKeypair has no privateKey) | Phase 1 |
 
 ---
-*Last updated: 2026-03-11 after Phase 1*
+| Pure Node.js STUN (no binary deps) | node:dgram + RFC 5389 parsing sufficient; zero external dependencies | Phase 2 |
+| Default connect mode: lan-only | Safer default — user's internet stays on their own connection | Phase 2 |
+| CLI status output JSON by default | Machine-readable for Claude Code; --human flag for table format | Phase 2 |
+
+---
+*Last updated: 2026-03-11 after Phase 2*
