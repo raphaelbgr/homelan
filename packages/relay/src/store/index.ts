@@ -13,12 +13,12 @@ export interface PeerStore {
   close(): void;
 }
 
-export function createStore(type: "sqlite" | "memory", dbPath: string): PeerStore {
+export async function createStore(type: "sqlite" | "memory", dbPath: string): Promise<PeerStore> {
   if (type === "memory") {
     return new MemoryStore();
   }
-  // Lazy import to avoid loading better-sqlite3 in serverless environments
-  const Database = require("better-sqlite3");
+  // Dynamic import to avoid loading better-sqlite3 in serverless environments
+  const { default: Database } = await import("better-sqlite3");
   const db = new Database(dbPath);
   return new SqliteStore(db);
 }
