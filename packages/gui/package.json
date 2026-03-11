@@ -15,7 +15,11 @@
     "@tauri-apps/plugin-shell": "^2.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@homelan/shared": "workspace:*"
+    "@homelan/shared": "workspace:*",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.400.0",
+    "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0",
