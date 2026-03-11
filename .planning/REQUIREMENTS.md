@@ -57,7 +57,7 @@
 - [x] **CLI-02**: `homelan disconnect` command
 - [x] **CLI-03**: `homelan status` command with JSON output
 - [x] **CLI-04**: `homelan switch-mode <mode>` command
-- [ ] **CLI-05**: `homelan devices` command lists LAN devices with names and IPs
+- [x] **CLI-05**: `homelan devices` command lists LAN devices with names and IPs
 - [x] **CLI-06**: All CLI commands show progress and never hang silently
 - [x] **CLI-07**: CLI has automatic retry with status reporting on failures
 
@@ -77,9 +77,9 @@
 
 ### Service Discovery
 
-- [ ] **DISC-01**: Connected clients can see LAN devices with human-readable names
-- [ ] **DISC-02**: Device list includes IP, hostname, and device type when available
-- [ ] **DISC-03**: Device discovery updates automatically while connected
+- [x] **DISC-01**: Connected clients can see LAN devices with human-readable names
+- [x] **DISC-02**: Device list includes IP, hostname, and device type when available
+- [x] **DISC-03**: Device discovery updates automatically while connected
 
 ## v2 Requirements
 
@@ -153,7 +153,7 @@
 | CLI-02 | Phase 2 | Complete |
 | CLI-03 | Phase 2 | Complete |
 | CLI-04 | Phase 3 | Complete |
-| CLI-05 | Phase 3 | Pending |
+| CLI-05 | Phase 3 | Complete |
 | CLI-06 | Phase 2 | Complete |
 | CLI-07 | Phase 2 | Complete |
 | CLDE-01 | Phase 5 | Pending |
@@ -164,9 +164,9 @@
 | AUTH-02 | Phase 5 | Pending |
 | AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 5 | Pending |
-| DISC-01 | Phase 3 | Pending |
-| DISC-02 | Phase 3 | Pending |
-| DISC-03 | Phase 3 | Pending |
+| DISC-01 | Phase 3 | Complete |
+| DISC-02 | Phase 3 | Complete |
+| DISC-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 49 total

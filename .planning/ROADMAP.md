@@ -87,11 +87,11 @@ Plans:
 3. Device list updates automatically while connected (daemon polls home network for new/removed devices); user runs command multiple times and sees additions reflected
 4. Routing tables are correctly configured per mode: Full Gateway routes default 0.0.0.0/0 via tunnel except local subnet; LAN-Only routes only home subnet via tunnel
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
-- [ ] 03-01-PLAN.md — Daemon.switchMode() + IPC /switch-mode route + homelan switch-mode CLI command
-- [ ] 03-02-PLAN.md — ARP scanner module + daemon device discovery polling + homelan devices CLI command
+- [x] 03-01-PLAN.md — Daemon.switchMode() + IPC /switch-mode route + homelan switch-mode CLI command
+- [x] 03-02-PLAN.md — ARP scanner module + daemon device discovery polling + homelan devices CLI command
 - [ ] 03-03-PLAN.md — Phase 3 integration verification (full test suite + human smoke test)
 
 ---

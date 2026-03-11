@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-11T20:53:36.913Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-11T21:01:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 14
-  completed_plans: 12
-  percent: 86
+  completed_plans: 13
+  percent: 93
 ---
 
 # HomeLAN Project State
@@ -41,19 +41,19 @@ progress:
 
 **Milestone:** Phase 3 In Progress
 **Active Phase:** 03-mode-switching-service-discovery
-**Plan:** 03-01 COMPLETE — Live mode switching (Daemon.switchMode, POST /switch-mode, homelan switch-mode CLI)
-**Stopped At:** Completed 03-01-PLAN.md
+**Plan:** 03-02 COMPLETE — LAN device discovery (ARP parser, Daemon polling, homelan devices CLI)
+**Stopped At:** Completed 03-02-PLAN.md
 
-**Progress:** [█████████░] 86% (12/14 plans done)
+**Progress:** [█████████░] 93% (13/14 plans done)
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
 Phase 2: Tunnel + NAT + CLI             ██████████  Plan 6/6 done (COMPLETE)
-Phase 3: Mode Switching + Discovery     ███░░░░░░░  1/3 plans done (In Progress)
+Phase 3: Mode Switching + Discovery     ██████░░░░  2/3 plans done (In Progress)
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 31/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..03, TUNL-05..09, CLI-01..04, CLI-06, CLI-07)
+Overall: 33/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..03, TUNL-05..09, CLI-01..04, CLI-05, CLI-06, CLI-07, DISC-01, DISC-02, DISC-03)
 ```
 
 ---
@@ -113,6 +113,10 @@ Overall: 31/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | _wgConfig stored in Daemon after connect() | Enables live AllowedIPs reconfiguration via switchMode() without reconnect; cleared on disconnect() | 03-01 |
 | switchMode DNS failure is warning-only | Tunnel correctness over DNS enforcement; same pattern as connect() for consistency | 03-01 |
 | onModeChange() follows onProgress() listener pattern | Consistent event API (push array, return unsub fn) across all daemon event types | 03-01 |
+| Multicast IPs (224-239.x.x.x) filtered in ARP parser | Multicast MACs are valid format but not real unicast LAN devices; filter by IP range is more reliable | 03-02 |
+| LanScannerFn injectable into Daemon constructor | Consistent with wgInterface injection pattern; enables unit test isolation without spawning arp processes | 03-02 |
+| discoveryIntervalMs injectable for test isolation | Avoids fake timer use in tests; set to 0ms or large value to control scan frequency deterministically | 03-02 |
+| Device listener deduplication via JSON.stringify | Simple deep equality for LanDevice[]; avoids spurious events when arp returns same result on each poll | 03-02 |
 
 ---
 
@@ -336,3 +340,18 @@ Overall: 31/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Added homelan switch-mode CLI command with mode validation, daemon check, --json flag
 - 11 new tests added; 125 total passing; zero TypeScript errors
 - Completed requirements: TUNL-07, CLI-04
+
+---
+
+**2026-03-11 - Plan 03-02 Execution (7 min)**
+- Built ARP table parser (arp.ts): Windows and macOS/linux format support with injectable ShellExecutor
+- Added multicast IP filter (224-239.x.x.x) in addition to gateway (.1) and broadcast (.255) filtering
+- inferDeviceType(): heuristic matching for Fire TV, Mac Mini, MacBook, iPhone, iPad, Windows PC, Android Device
+- resolveHostname(): nslookup reverse DNS for Windows entries (no hostname in arp -a)
+- scanLanDevices(): full pipeline — ARP + nslookup enrichment + type inference
+- Daemon: startDeviceDiscovery/stopDeviceDiscovery with 30s polling, JSON-diff change detection, DevicesListener pattern
+- Discovery auto-wired: starts on connect(), stops on disconnect()
+- getLanDevices() now returns live data (was empty stub); getStatus() includes real lanDevices
+- homelan devices CLI command: table with IP/Hostname/Type columns, --json flag, exit 3 when daemon not running
+- 5 new daemon discovery tests; 162 total passing (130 daemon + 22 relay + 6 shared + 4 cli); zero TypeScript errors
+- Completed requirements: DISC-01, DISC-02, DISC-03, CLI-05
