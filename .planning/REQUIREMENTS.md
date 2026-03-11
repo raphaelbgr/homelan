@@ -43,7 +43,7 @@
 
 ### Desktop GUI
 
-- [ ] **GUI-01**: Tauri + React desktop app for Windows and macOS
+- [x] **GUI-01**: Tauri + React desktop app for Windows and macOS
 - [ ] **GUI-02**: Connect/disconnect button with clear visual state
 - [ ] **GUI-03**: Mode toggle between Full Gateway and LAN-Only with descriptions
 - [ ] **GUI-04**: Real-time connection status display (mode, latency, throughput)
@@ -142,7 +142,7 @@
 | DAEM-04 | Phase 1 | Complete |
 | DAEM-05 | Phase 1 | Complete |
 | DAEM-06 | Phase 1 | Complete |
-| GUI-01 | Phase 4 | Pending |
+| GUI-01 | Phase 4 | Complete |
 | GUI-02 | Phase 4 | Pending |
 | GUI-03 | Phase 4 | Pending |
 | GUI-04 | Phase 4 | Pending |
