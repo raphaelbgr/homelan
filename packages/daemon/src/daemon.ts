@@ -13,6 +13,8 @@ import { resolveExternalEndpoint } from "./nat/stun.js";
 import { RelayClient } from "./nat/relayClient.js";
 import { attemptHolePunch } from "./nat/holePunch.js";
 import { WireGuardInterface, type WgInterfaceConfig } from "./wireguard/interface.js";
+import { createDnsConfigurator, type DnsConfigurator } from "./platform/dns.js";
+import { createIPv6Blocker, type IPv6Blocker } from "./platform/ipv6.js";
 
 export type StunResolverFn = typeof resolveExternalEndpoint;
 export type RelayClientFactory = (opts: {
@@ -41,7 +43,9 @@ export class Daemon {
     private readonly relayClientFactory: RelayClientFactory = (opts) =>
       new RelayClient(opts),
     private readonly holePunchFn: HolePunchFn = attemptHolePunch,
-    private readonly wgInterface: WireGuardInterface = new WireGuardInterface("homelan")
+    private readonly wgInterface: WireGuardInterface = new WireGuardInterface("homelan"),
+    private readonly dnsConfigurator: DnsConfigurator = createDnsConfigurator(),
+    private readonly ipv6Blocker: IPv6Blocker = createIPv6Blocker()
   ) {}
 
   async start(): Promise<void> {
@@ -146,6 +150,18 @@ export class Daemon {
       this.wgInterface.configure(wgConfig);
       await this.wgInterface.up();
 
+      // Apply DNS and IPv6 rules after WireGuard is up.
+      // If these fail, log a warning but keep the tunnel running — routing works even without enforcement.
+      try {
+        await this.ipv6Blocker.blockIPv6("homelan");
+        if (config.mode === "full-gateway") {
+          await this.dnsConfigurator.setDns("homelan", "192.168.7.1");
+        }
+        // lan-only: keep existing DNS, no change
+      } catch (policyErr) {
+        console.warn("[daemon] DNS/IPv6 policy apply failed (tunnel still up):", policyErr);
+      }
+
       this._mode = config.mode;
       this.stateMachine.transition("connected");
       this.emitProgress("connected");
@@ -171,6 +187,15 @@ export class Daemon {
 
     this.stateMachine.transition("disconnecting");
     await this.wgInterface.down();
+
+    // Restore DNS and IPv6 rules regardless of mode (safe no-op if not applied).
+    try {
+      await this.ipv6Blocker.restoreIPv6("homelan");
+      await this.dnsConfigurator.restoreDns("homelan");
+    } catch (policyErr) {
+      console.warn("[daemon] DNS/IPv6 policy restore failed:", policyErr);
+    }
+
     this._mode = null;
     this.stateMachine.transition("idle");
   }

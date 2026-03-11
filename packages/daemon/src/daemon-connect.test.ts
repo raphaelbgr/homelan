@@ -1,6 +1,6 @@
 /**
  * Daemon connect/disconnect tests — uses vi.fn() mocks for all injected
- * dependencies (stun, relayClient, holePunch, wgInterface).
+ * dependencies (stun, relayClient, holePunch, wgInterface, dnsConfigurator, ipv6Blocker).
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { NatTraversalConfig, TunnelMode, ConnectionProgress } from "@homelan/shared";
@@ -12,6 +12,8 @@ import path from "node:path";
 import type { HolePunchResult } from "./nat/holePunch.js";
 import type { WgInterfaceConfig } from "./wireguard/interface.js";
 import type { LookupResponse } from "@homelan/shared";
+import type { DnsConfigurator } from "./platform/dns.js";
+import type { IPv6Blocker } from "./platform/ipv6.js";
 
 function makeTmpKeystore(): FileKeystore {
   const tmpDir = path.join(
@@ -57,6 +59,8 @@ describe("Daemon.connect() / Daemon.disconnect()", () => {
     down: ReturnType<typeof vi.fn>;
     status: ReturnType<typeof vi.fn>;
   };
+  let mockDnsConfigurator: DnsConfigurator;
+  let mockIPv6Blocker: IPv6Blocker;
 
   beforeEach(() => {
     keystore = makeTmpKeystore();
@@ -83,6 +87,16 @@ describe("Daemon.connect() / Daemon.disconnect()", () => {
       down: vi.fn().mockResolvedValue(undefined),
       status: vi.fn().mockResolvedValue({ isUp: false, peers: [] }),
     };
+
+    mockDnsConfigurator = {
+      setDns: vi.fn().mockResolvedValue(undefined),
+      restoreDns: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockIPv6Blocker = {
+      blockIPv6: vi.fn().mockResolvedValue(undefined),
+      restoreIPv6: vi.fn().mockResolvedValue(undefined),
+    };
   });
 
   function makeDaemon(): Daemon {
@@ -92,7 +106,9 @@ describe("Daemon.connect() / Daemon.disconnect()", () => {
       mockStunResolver,
       mockRelayClientFactory,
       mockHolePunchFn,
-      mockWgInterface as never
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker
     );
   }
 
@@ -174,5 +190,36 @@ describe("Daemon.connect() / Daemon.disconnect()", () => {
     await expect(daemon.connect(BASE_CONFIG)).rejects.toThrow(
       /already connecting or connected/i
     );
+  });
+
+  it("Test 6: full-gateway connect() calls setDns and blockIPv6", async () => {
+    const daemon = makeDaemon();
+    await daemon.start();
+
+    await daemon.connect({ ...BASE_CONFIG, mode: "full-gateway" });
+
+    expect(mockIPv6Blocker.blockIPv6).toHaveBeenCalledWith("homelan");
+    expect(mockDnsConfigurator.setDns).toHaveBeenCalledWith("homelan", "192.168.7.1");
+  });
+
+  it("Test 7: lan-only connect() calls blockIPv6 but NOT setDns", async () => {
+    const daemon = makeDaemon();
+    await daemon.start();
+
+    await daemon.connect({ ...BASE_CONFIG, mode: "lan-only" });
+
+    expect(mockIPv6Blocker.blockIPv6).toHaveBeenCalledWith("homelan");
+    expect(mockDnsConfigurator.setDns).not.toHaveBeenCalled();
+  });
+
+  it("Test 8: disconnect() calls restoreIPv6 and restoreDns", async () => {
+    const daemon = makeDaemon();
+    await daemon.start();
+    await daemon.connect(BASE_CONFIG);
+
+    await daemon.disconnect();
+
+    expect(mockIPv6Blocker.restoreIPv6).toHaveBeenCalledWith("homelan");
+    expect(mockDnsConfigurator.restoreDns).toHaveBeenCalledWith("homelan");
   });
 });
