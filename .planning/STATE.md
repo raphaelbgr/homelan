@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-03-11T19:14:26.118Z"
+progress:
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 5
+  completed_plans: 1
+  percent: 20
+---
+
 # HomeLAN Project State
 
 **Project:** Personal VPN/Tunnel Tool
@@ -24,20 +38,21 @@
 
 ## Current Position
 
-**Milestone:** v1 Roadmap Created
-**Active Phase:** None (planning complete)
-**Plan:** TBD
+**Milestone:** Phase 1 Execution Started
+**Active Phase:** 01-relay-daemon-foundation
+**Plan:** 01-01 COMPLETE, advancing to 01-02
+**Stopped At:** Completed 01-relay-daemon-foundation/01-01-PLAN.md
 
-**Progress:** Roadmap written, 49/49 requirements mapped to 5 phases
+**Progress:** [██░░░░░░░░] 20%
 
 ```
-Phase 1: Relay & Daemon Foundation       ░░░░░░░░░░  0%
+Phase 1: Relay & Daemon Foundation       ██░░░░░░░░  Plan 1/5 done
 Phase 2: Tunnel + NAT + CLI             ░░░░░░░░░░  0%
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 0/49 requirements completed
+Overall: 4/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01)
 ```
 
 ---
@@ -63,6 +78,9 @@ Overall: 0/49 requirements completed
 | Tauri + React for GUI | Smaller bundle (10MB vs 100MB), lower memory footprint (50MB vs 150-300MB), future iOS/Android support | Confirmed |
 | WireGuard keys only for auth | Simplicity; key exchange via relay handles onboarding | Confirmed |
 | Coarse-grained phases | Compress aggressively: relay + daemon together, tunnel + NAT + CLI together | Confirmed |
+| Plain pnpm workspaces over Turborepo/Nx | Sufficient for project size, no extra tooling overhead | 01-01 |
+| WireguardKeypair has no privateKey field | Private key never leaves daemon, enforced at type level | 01-01 |
+| IpcStatusResponse = DaemonStatus type alias | Daemon is single source of truth, no separate IPC schema drift | 01-01 |
 
 ---
 
@@ -160,7 +178,14 @@ Overall: 0/49 requirements completed
 - Created ROADMAP.md, STATE.md, updated REQUIREMENTS.md traceability
 - Ready for `/gsd:plan-phase 1`
 
+**2026-03-11 - Plan 01-01 Execution (4 min)**
+- Bootstrapped pnpm monorepo with workspaces (package.json, pnpm-workspace.yaml, tsconfig.base.json)
+- Created @homelan/shared package with 17 type exports across relay, daemon, IPC/SSE files
+- 6 type-level vitest tests passing, verifying all contracts
+- relay and daemon packages linked to shared via workspace:* dependency
+- Completed requirements: DAEM-04, DAEM-05, DAEM-06, AUTH-01
+
 ---
 
 *State initialized: 2026-03-11*
-*Last updated: 2026-03-11 after roadmap creation*
+*Last updated: 2026-03-11 after 01-01 execution*

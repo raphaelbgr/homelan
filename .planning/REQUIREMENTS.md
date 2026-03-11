@@ -37,9 +37,9 @@
 - [ ] **DAEM-01**: Background daemon manages WireGuard interface lifecycle
 - [ ] **DAEM-02**: Daemon generates and stores WireGuard keys in OS keychain
 - [ ] **DAEM-03**: Daemon exposes HTTP IPC on localhost for GUI/CLI communication
-- [ ] **DAEM-04**: Daemon is single source of truth for all connection state
-- [ ] **DAEM-05**: Daemon publishes state changes via events (GUI/CLI subscribe)
-- [ ] **DAEM-06**: Daemon API exposes: connection status, current mode, latency, throughput, host info, connected devices, LAN device list
+- [x] **DAEM-04**: Daemon is single source of truth for all connection state
+- [x] **DAEM-05**: Daemon publishes state changes via events (GUI/CLI subscribe)
+- [x] **DAEM-06**: Daemon API exposes: connection status, current mode, latency, throughput, host info, connected devices, LAN device list
 
 ### Desktop GUI
 
@@ -70,7 +70,7 @@
 
 ### Onboarding & Auth
 
-- [ ] **AUTH-01**: WireGuard key-pair based authentication (no user accounts)
+- [x] **AUTH-01**: WireGuard key-pair based authentication (no user accounts)
 - [ ] **AUTH-02**: New client can onboard via QR code or one-time invite URL from server
 - [ ] **AUTH-03**: Key exchange happens securely via relay (HTTPS)
 - [ ] **AUTH-04**: First-time setup wizard in GUI guides user through key generation and server connection
@@ -139,9 +139,9 @@
 | DAEM-01 | Phase 1 | Pending |
 | DAEM-02 | Phase 1 | Pending |
 | DAEM-03 | Phase 1 | Pending |
-| DAEM-04 | Phase 1 | Pending |
-| DAEM-05 | Phase 1 | Pending |
-| DAEM-06 | Phase 1 | Pending |
+| DAEM-04 | Phase 1 | Complete |
+| DAEM-05 | Phase 1 | Complete |
+| DAEM-06 | Phase 1 | Complete |
 | GUI-01 | Phase 4 | Pending |
 | GUI-02 | Phase 4 | Pending |
 | GUI-03 | Phase 4 | Pending |
@@ -160,7 +160,7 @@
 | CLDE-02 | Phase 5 | Pending |
 | CLDE-03 | Phase 5 | Pending |
 | CLDE-04 | Phase 5 | Pending |
-| AUTH-01 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 5 | Pending |
 | AUTH-03 | Phase 1 | Pending |
 | AUTH-04 | Phase 5 | Pending |
