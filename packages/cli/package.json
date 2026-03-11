@@ -2,9 +2,23 @@
   "name": "@homelan/cli",
   "version": "0.1.0",
   "type": "module",
+  "bin": {
+    "homelan": "./dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@homelan/shared": "workspace:*",
+    "typescript": "^5.4",
+    "vitest": "^1",
+    "tsx": "^4"
   }
 }
