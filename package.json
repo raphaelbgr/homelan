@@ -7,6 +7,9 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
