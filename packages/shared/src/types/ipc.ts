@@ -35,6 +35,7 @@ export type SseEventType =
   | "peer_connected"
   | "peer_disconnected"
   | "devices_updated"
+  | "connection_progress"
   | "error";
 
 export interface SseEvent<T = unknown> {

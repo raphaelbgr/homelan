@@ -148,17 +148,17 @@ function parseStunResponse(msg: Buffer): StunResult | null {
       const xPort = msg.readUInt16BE(offset + 2);
       const port = xPort ^ (MAGIC_COOKIE >>> 16);
 
-      const cookieBytes = [
+      const cookieBytes: [number, number, number, number] = [
         (MAGIC_COOKIE >>> 24) & 0xff,
         (MAGIC_COOKIE >>> 16) & 0xff,
         (MAGIC_COOKIE >>> 8) & 0xff,
         MAGIC_COOKIE & 0xff,
       ];
       const ipBytes = [
-        msg[offset + 4] ^ cookieBytes[0],
-        msg[offset + 5] ^ cookieBytes[1],
-        msg[offset + 6] ^ cookieBytes[2],
-        msg[offset + 7] ^ cookieBytes[3],
+        (msg[offset + 4] ?? 0) ^ cookieBytes[0],
+        (msg[offset + 5] ?? 0) ^ cookieBytes[1],
+        (msg[offset + 6] ?? 0) ^ cookieBytes[2],
+        (msg[offset + 7] ?? 0) ^ cookieBytes[3],
       ];
       const ip = ipBytes.join(".");
 

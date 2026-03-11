@@ -232,20 +232,45 @@ describe("IPC server", () => {
     }, 5000);
   });
 
-  // --- Stub POST endpoints ---
-  describe("POST stub endpoints", () => {
-    it("POST /connect returns 501 NOT_IMPLEMENTED", async () => {
+  // --- POST /connect and /disconnect (now implemented in Phase 2) ---
+  describe("POST /connect", () => {
+    it("returns 400 when mode is missing", async () => {
       const res = await request(app).post("/connect").send({});
-      expect(res.status).toBe(501);
-      expect(res.body.code).toBe("NOT_IMPLEMENTED");
+      expect(res.status).toBe(400);
+      expect(res.body.ok).toBe(false);
     });
 
-    it("POST /disconnect returns 501 NOT_IMPLEMENTED", async () => {
+    it("returns 400 when mode is invalid", async () => {
+      const res = await request(app).post("/connect").send({ mode: "invalid-mode" });
+      expect(res.status).toBe(400);
+      expect(res.body.ok).toBe(false);
+    });
+
+    it("returns 500 when RELAY_URL env var is not set", async () => {
+      // Unset env var (may not be set in test env)
+      const saved = process.env["RELAY_URL"];
+      delete process.env["RELAY_URL"];
+      try {
+        const res = await request(app).post("/connect").send({ mode: "lan-only" });
+        expect(res.status).toBe(500);
+        expect(res.body.ok).toBe(false);
+      } finally {
+        if (saved !== undefined) process.env["RELAY_URL"] = saved;
+      }
+    });
+  });
+
+  describe("POST /disconnect", () => {
+    it("returns 500 when daemon is not connected", async () => {
       const res = await request(app).post("/disconnect").send({});
-      expect(res.status).toBe(501);
-      expect(res.body.code).toBe("NOT_IMPLEMENTED");
+      // Daemon starts in idle state, so disconnect should fail
+      expect(res.status).toBe(500);
+      expect(res.body.ok).toBe(false);
     });
+  });
 
+  // --- Stub POST endpoints still returning 501 ---
+  describe("POST stub endpoints", () => {
     it("POST /switch-mode returns 501 NOT_IMPLEMENTED", async () => {
       const res = await request(app).post("/switch-mode").send({});
       expect(res.status).toBe(501);
