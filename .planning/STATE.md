@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-relay-daemon-foundation/01-03-PLAN.md
-last_updated: "2026-03-11T19:26:16Z"
+stopped_at: Completed 01-relay-daemon-foundation/01-04-PLAN.md
+last_updated: "2026-03-11T19:38:50.237Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # HomeLAN Project State
@@ -41,19 +41,19 @@ progress:
 
 **Milestone:** Phase 1 Execution In Progress
 **Active Phase:** 01-relay-daemon-foundation
-**Plan:** 01-03 COMPLETE, advancing to 01-04
-**Stopped At:** Completed 01-relay-daemon-foundation/01-03-PLAN.md
+**Plan:** 01-04 COMPLETE, advancing to 01-05
+**Stopped At:** Completed 01-relay-daemon-foundation/01-04-PLAN.md
 
-**Progress:** [██████░░░░] 60%
+**Progress:** [████████░░] 80%
 
 ```
-Phase 1: Relay & Daemon Foundation       ██████░░░░  Plan 3/5 done
+Phase 1: Relay & Daemon Foundation       ████████░░  Plan 4/5 done
 Phase 2: Tunnel + NAT + CLI             ░░░░░░░░░░  0%
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 12/49 requirements completed (DAEM-01, DAEM-02, DAEM-04, DAEM-05, DAEM-06, AUTH-01, AUTH-03, RELY-01, RELY-02, RELY-03, RELY-04, AUTH-01)
+Overall: 16/49 requirements completed (DAEM-01, DAEM-02, DAEM-03, DAEM-04, DAEM-05, DAEM-06, AUTH-01, AUTH-03, RELY-01, RELY-02, RELY-03, RELY-04)
 ```
 
 ---
@@ -88,6 +88,9 @@ Overall: 12/49 requirements completed (DAEM-01, DAEM-02, DAEM-04, DAEM-05, DAEM-
 | generateKeypair() uses Node.js built-in crypto (X25519) | wireguard-tools@0.3 does not exist; package internals use unsafe shell interpolation; Node.js crypto produces identical Curve25519 keys with no binary dependency | 01-03 |
 | All daemon shell calls use execFileSafe(cmd, argsArray) | Args never interpolated into shell string — prevents command injection at the type+pattern level | 01-03 |
 | FileKeystore is canonical test double for OS keychain | Windows/macOS backends are integration-only; all unit tests use FileKeystore for CI safety | 01-03 |
+| SSE tests use http.Server + collectSse() helper | supertest buffer/parse API does not emit data events for streaming responses in this environment | 01-04 |
+| Explicit Router/Express return types on all factories | TS2742 portability error from inferred express-serve-static-core references under NodeNext + declarationMap | 01-04 |
+| derivePublicKeyFromPrivate() reconstructs PKCS8 DER | Avoids storing public key separately and avoids wg binary dependency in Daemon class | 01-04 |
 
 ---
 
@@ -215,5 +218,15 @@ Overall: 12/49 requirements completed (DAEM-01, DAEM-02, DAEM-04, DAEM-05, DAEM-
 
 ---
 
+**2026-03-11 - Plan 01-04 Execution (6 min)**
+- Built Express IPC server with GET /status, GET /devices, GET /events (SSE), GET /health
+- POST /connect, /disconnect, /switch-mode stubs returning 501 NOT_IMPLEMENTED
+- Daemon class wires KeychainStore + StateMachine; generates/retrieves X25519 keypair; derivePublicKeyFromPrivate() via PKCS8 DER reconstruction
+- index.ts entry point: binds 127.0.0.1:30001, SIGTERM/SIGINT graceful shutdown
+- 61 tests passing (34 prior + 14 IPC server + 13 daemon), TypeScript build zero errors
+- Completed requirements: DAEM-03, DAEM-04, DAEM-05, DAEM-06
+
+---
+
 *State initialized: 2026-03-11*
-*Last updated: 2026-03-11 after 01-03 execution*
+*Last updated: 2026-03-11 after 01-04 execution*
