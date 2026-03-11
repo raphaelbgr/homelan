@@ -118,61 +118,62 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TUNL-01 | Phase ? | Pending |
-| TUNL-02 | Phase ? | Pending |
-| TUNL-03 | Phase ? | Pending |
-| TUNL-04 | Phase ? | Pending |
-| TUNL-05 | Phase ? | Pending |
-| TUNL-06 | Phase ? | Pending |
-| TUNL-07 | Phase ? | Pending |
-| TUNL-08 | Phase ? | Pending |
-| TUNL-09 | Phase ? | Pending |
-| NAT-01 | Phase ? | Pending |
-| NAT-02 | Phase ? | Pending |
-| NAT-03 | Phase ? | Pending |
-| NAT-04 | Phase ? | Pending |
-| NAT-05 | Phase ? | Pending |
-| RELY-01 | Phase ? | Pending |
-| RELY-02 | Phase ? | Pending |
-| RELY-03 | Phase ? | Pending |
-| RELY-04 | Phase ? | Pending |
-| DAEM-01 | Phase ? | Pending |
-| DAEM-02 | Phase ? | Pending |
-| DAEM-03 | Phase ? | Pending |
-| DAEM-04 | Phase ? | Pending |
-| DAEM-05 | Phase ? | Pending |
-| DAEM-06 | Phase ? | Pending |
-| GUI-01 | Phase ? | Pending |
-| GUI-02 | Phase ? | Pending |
-| GUI-03 | Phase ? | Pending |
-| GUI-04 | Phase ? | Pending |
-| GUI-05 | Phase ? | Pending |
-| GUI-06 | Phase ? | Pending |
-| GUI-07 | Phase ? | Pending |
-| CLI-01 | Phase ? | Pending |
-| CLI-02 | Phase ? | Pending |
-| CLI-03 | Phase ? | Pending |
-| CLI-04 | Phase ? | Pending |
-| CLI-05 | Phase ? | Pending |
-| CLI-06 | Phase ? | Pending |
-| CLI-07 | Phase ? | Pending |
-| CLDE-01 | Phase ? | Pending |
-| CLDE-02 | Phase ? | Pending |
-| CLDE-03 | Phase ? | Pending |
-| CLDE-04 | Phase ? | Pending |
-| AUTH-01 | Phase ? | Pending |
-| AUTH-02 | Phase ? | Pending |
-| AUTH-03 | Phase ? | Pending |
-| AUTH-04 | Phase ? | Pending |
-| DISC-01 | Phase ? | Pending |
-| DISC-02 | Phase ? | Pending |
-| DISC-03 | Phase ? | Pending |
+| TUNL-01 | Phase 2 | Pending |
+| TUNL-02 | Phase 2 | Pending |
+| TUNL-03 | Phase 2 | Pending |
+| TUNL-04 | Phase 4 | Pending |
+| TUNL-05 | Phase 2 | Pending |
+| TUNL-06 | Phase 2 | Pending |
+| TUNL-07 | Phase 3 | Pending |
+| TUNL-08 | Phase 2 | Pending |
+| TUNL-09 | Phase 2 | Pending |
+| NAT-01 | Phase 2 | Pending |
+| NAT-02 | Phase 2 | Pending |
+| NAT-03 | Phase 2 | Pending |
+| NAT-04 | Phase 2 | Pending |
+| NAT-05 | Phase 2 | Pending |
+| RELY-01 | Phase 1 | Pending |
+| RELY-02 | Phase 1 | Pending |
+| RELY-03 | Phase 1 | Pending |
+| RELY-04 | Phase 1 | Pending |
+| DAEM-01 | Phase 1 | Pending |
+| DAEM-02 | Phase 1 | Pending |
+| DAEM-03 | Phase 1 | Pending |
+| DAEM-04 | Phase 1 | Pending |
+| DAEM-05 | Phase 1 | Pending |
+| DAEM-06 | Phase 1 | Pending |
+| GUI-01 | Phase 4 | Pending |
+| GUI-02 | Phase 4 | Pending |
+| GUI-03 | Phase 4 | Pending |
+| GUI-04 | Phase 4 | Pending |
+| GUI-05 | Phase 4 | Pending |
+| GUI-06 | Phase 4 | Pending |
+| GUI-07 | Phase 4 | Pending |
+| CLI-01 | Phase 2 | Pending |
+| CLI-02 | Phase 2 | Pending |
+| CLI-03 | Phase 2 | Pending |
+| CLI-04 | Phase 3 | Pending |
+| CLI-05 | Phase 3 | Pending |
+| CLI-06 | Phase 2 | Pending |
+| CLI-07 | Phase 2 | Pending |
+| CLDE-01 | Phase 5 | Pending |
+| CLDE-02 | Phase 5 | Pending |
+| CLDE-03 | Phase 5 | Pending |
+| CLDE-04 | Phase 5 | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 5 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 5 | Pending |
+| DISC-01 | Phase 3 | Pending |
+| DISC-02 | Phase 3 | Pending |
+| DISC-03 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 46 total
-- Mapped to phases: 0
-- Unmapped: 46 ⚠️
+- v1 requirements: 49 total
+- Mapped to phases: 49
+- Unmapped: 0 ✓
 
 ---
+
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-11 after initial definition*
+*Last updated: 2026-03-11 after roadmap creation*

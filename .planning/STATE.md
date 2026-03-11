@@ -1,0 +1,166 @@
+# HomeLAN Project State
+
+**Project:** Personal VPN/Tunnel Tool
+**Created:** 2026-03-11
+**Current Milestone:** Planning Phase
+
+---
+
+## Project Reference
+
+**Core Value:** Seamlessly access home LAN resources (SMB shares, local services, SSH) from anywhere, with a single click or CLI command, in the right mode for the situation.
+
+**Key Constraint:** WireGuard-based tunnel with flexible key-based auth (no user accounts), supporting two modes (Full Gateway vs LAN-Only).
+
+**Home Network Context:**
+- Windows desktop (192.168.7.101)
+- Mac Mini M4 (192.168.7.102)
+- Linux VM (172.24.174.17)
+- Fire TV (192.168.7.152)
+
+**Primary Use Case:** Claude Code (AI agent) needs to programmatically connect to host network to access local APIs, file shares, and SSH.
+
+---
+
+## Current Position
+
+**Milestone:** v1 Roadmap Created
+**Active Phase:** None (planning complete)
+**Plan:** TBD
+
+**Progress:** Roadmap written, 49/49 requirements mapped to 5 phases
+
+```
+Phase 1: Relay & Daemon Foundation       ░░░░░░░░░░  0%
+Phase 2: Tunnel + NAT + CLI             ░░░░░░░░░░  0%
+Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
+Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
+Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
+
+Overall: 0/49 requirements completed
+```
+
+---
+
+## Phase Overview
+
+| Phase | Objective | Key Deliverables | Req Count |
+|-------|-----------|------------------|-----------|
+| 1 | Relay & Daemon Foundation | Relay server (Express, HTTPS), Daemon core (WireGuard lifecycle, keychain, IPC) | 12 |
+| 2 | Tunnel + NAT + CLI | P2P tunnel, hole punching + relay fallback, CLI commands (connect, disconnect, status) | 17 |
+| 3 | Mode Switching + Discovery | Mode switching (routing rules), device discovery (hostname, IP, type), CLI mode commands | 6 |
+| 4 | Desktop GUI | Tauri + React app (Windows, macOS), connect/disconnect, mode toggle, status display | 7 |
+| 5 | Onboarding + Fallback + Skill | Key setup (QR/URL), DDNS fallback, Claude Code skill definition, connection history | 7 |
+
+---
+
+## Key Decisions
+
+| Decision | Rationale | Status |
+|----------|-----------|--------|
+| WireGuard over OpenVPN | Faster, simpler, modern, kernel-level performance | Confirmed |
+| Relay-first discovery | Avoids port-forwarding complexity; DDNS as fallback | Confirmed |
+| Tauri + React for GUI | Smaller bundle (10MB vs 100MB), lower memory footprint (50MB vs 150-300MB), future iOS/Android support | Confirmed |
+| WireGuard keys only for auth | Simplicity; key exchange via relay handles onboarding | Confirmed |
+| Coarse-grained phases | Compress aggressively: relay + daemon together, tunnel + NAT + CLI together | Confirmed |
+
+---
+
+## Critical Path Dependencies
+
+1. **Phase 1 → Phase 2**: Relay must be deployed and functioning before clients can discover peers
+2. **Phase 2 → Phase 3**: NAT traversal and tunnel stability required before mode switching can be tested
+3. **Phase 2 → Phase 4**: Daemon IPC must be stable before GUI can consume it
+4. **Phase 3 & 4 can proceed in parallel** with Phase 2 (mode switching and GUI both depend on Phase 2 only)
+5. **Phase 5 depends on Phases 2, 4**: Onboarding UI needs GUI; fallback routing needs Phase 3; skill depends on CLI from Phase 2
+
+---
+
+## Known Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|-----------|
+| Symmetric NAT breaks hole punching (30-50% of networks) | Clients stuck in "connecting" state | Aggressive timeout (3-5s), mandatory relay fallback, test on actual symmetric NAT |
+| DNS leaks expose browsing to ISP | Privacy violation in Full Gateway mode | Explicit per-mode DNS config, test on dual-stack networks |
+| IPv6 routes bypass tunnel, exposing real IP | Privacy violation | Disable IPv6 entirely in v1, plan full IPv6 support for v2 |
+| Relay server single point of failure | Complete block if relay unreachable | Three-tier fallback (relay → DDNS → hardcoded IP), client-side health checks |
+| GUI and CLI state desynchronization | User confusion (CLI says connected, GUI says disconnected) | Daemon is single source of truth, event-based IPC, atomic state transitions |
+
+---
+
+## Technology Stack
+
+**Relay Server & Daemon:**
+- Node.js 22.x LTS (runtime)
+- TypeScript 5.x (strict mode, type safety)
+- Express.js 5.x (relay HTTP server)
+- Commander.js 12.x (CLI argument parsing)
+- wireguard-tools (key generation)
+
+**Desktop GUI:**
+- Tauri 2.10.x (cross-platform, native OS WebView, Rust backend)
+- React 19.x (frontend)
+- Tailwind CSS + shadcn/ui (styling)
+- TanStack Query (optional, data fetching)
+
+**VPN Core:**
+- WireGuard (encryption: ChaCha20-Poly1305, keys: Curve25519)
+- wireguard-go (userspace fallback on unsupported platforms)
+- Native OS APIs (Windows VPN API, macOS NetworkExtension)
+
+**Testing:**
+- Vitest (unit tests)
+- Playwright (end-to-end desktop tests)
+- Manual symmetric NAT testing (AWS EC2 or CGNAT)
+
+---
+
+## Research Findings Summary
+
+**Stack Confidence:** HIGH - All technologies are mature LTS/stable versions, production-proven in similar projects.
+
+**Feature Confidence:** HIGH - Analyzed Tailscale, ZeroTier, Nebula. Table-stakes features align with all three. Differentiators (mode switching, self-hosted relay, no SaaS) validated.
+
+**Architecture Confidence:** HIGH - Control plane/data plane separation is industry standard. IPC patterns proven in Mullvad, OpenVPN3, WireGuard clients.
+
+**Pitfall Mitigation:** MEDIUM-HIGH - Top 5 pitfalls identified and mitigations planned. Only uncertainty: Tauri-specific desktop integration (Phase 4), which will be validated during implementation.
+
+**Phase Structure:** RECOMMENDED - Relay-first (dependency), Daemon+NAT second (core), Mode Switching third (differentiator), GUI fourth (visual layer), Onboarding+Fallback fifth (polish).
+
+---
+
+## Upcoming Milestones
+
+1. **Phase 1 Planning** → `/gsd:plan-phase 1`
+   - Task: Relay server architecture (Express, HTTPS, config validation)
+   - Task: Daemon core (WireGuard interface, keychain, IPC server)
+   - Task: Authentication foundation (key generation)
+
+2. **Phase 1 Implementation**
+   - Deliverable: Relay server running on Vercel/VPS
+   - Deliverable: Daemon can start, generate keys, respond to IPC queries
+
+3. **Phase 2 Planning** → `/gsd:plan-phase 2`
+   - Task: Peer discovery (relay client, STUN, endpoint lookup)
+   - Task: NAT traversal (hole punching, fallback logic)
+   - Task: CLI commands (connect, disconnect, status, modes)
+
+... and so on through Phase 5.
+
+---
+
+## Session Notes
+
+**2026-03-11 - Roadmap Creation**
+- Read PROJECT.md, REQUIREMENTS.md, research/SUMMARY.md
+- Extracted 46 v1 requirements across 7 categories
+- Identified 5 natural phase boundaries using coarse granularity
+- Derived 24 success criteria (observable user behaviors) across all phases
+- Mapped 100% of requirements (46/46) to phases with zero orphans
+- Created ROADMAP.md, STATE.md, updated REQUIREMENTS.md traceability
+- Ready for `/gsd:plan-phase 1`
+
+---
+
+*State initialized: 2026-03-11*
+*Last updated: 2026-03-11 after roadmap creation*
