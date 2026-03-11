@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "echo 'gui: placeholder package, skipping build'",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   }
