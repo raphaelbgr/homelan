@@ -61,7 +61,15 @@ Plans:
 5. IPv6 is disabled entirely in tunnel to prevent real IP leaks; user confirms tunnel is IPv6-safe with test tool
 6. `homelan status` returns JSON with connection state, current mode, latency, and throughput; output is machine-readable and reliable
 
-**Plans:** TBD
+**Plans:** 6 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — STUN client (RFC 5389) + relay HTTP client (register/lookup/auto-renew) in daemon
+- [ ] 02-02-PLAN.md — WebSocket UDP relay endpoint on relay server (/relay route, peer pairing by sessionToken)
+- [ ] 02-03-PLAN.md — Daemon.connect() + Daemon.disconnect() + UDP hole punch + IPC route wiring (no more 501s)
+- [ ] 02-04-PLAN.md — DNS configurator + IPv6 blocker platform handlers (netsh/networksetup), wired into daemon
+- [ ] 02-05-PLAN.md — CLI package: homelan connect/disconnect/status with spinner, exit codes, --json flag
+- [ ] 02-06-PLAN.md — Phase 2 integration verification (full test suite + human smoke test)
 
 ---
 
@@ -127,7 +135,7 @@ Plans:
 | Phase | Goal | Requirements | Success Criteria | Plans Complete | Status |
 |-------|------|--------------|------------------|-----------------|--------|
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
-| 2 | Tunnel + NAT + CLI | 17 | 6 | 0/? | Not started |
+| 2 | Tunnel + NAT + CLI | 17 | 6 | 0/6 | Planned |
 | 3 | Mode Switching + Discovery | 6 | 4 | 0/? | Not started |
 | 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
@@ -137,6 +145,6 @@ Plans:
 ---
 
 *Roadmap created: 2026-03-11*
-*Last updated: 2026-03-11 after Phase 1 planning*
+*Last updated: 2026-03-11 after Phase 2 planning*
 *Granularity: Coarse (5 phases, 6-17 requirements per phase)*
 *Research-informed structure: Relay first (dependency), Daemon+NAT second (core functionality), Mode Switching third (differentiator), GUI fourth (visual layer), Onboarding+Fallback fifth (polish)*
