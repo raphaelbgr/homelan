@@ -12,7 +12,10 @@ Seamlessly access home LAN resources (SMB shares, local services, devices) from 
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Lightweight relay/rendezvous server for NAT traversal and peer discovery (deployable on Vercel, AWS, any VPS, or free tier) — Phase 1
+- ✓ Server component that runs flexibly (Windows, Linux VM, dedicated device) — Phase 1
+- ✓ WireGuard key-based authentication (no user accounts needed) — Phase 1
+- ✓ Connection status display (connected/disconnected, current mode, latency, throughput) — Phase 1 (IPC contract defined + daemon status endpoint)
 
 ### Active
 
@@ -21,13 +24,9 @@ Seamlessly access home LAN resources (SMB shares, local services, devices) from 
 - [ ] Cross-platform desktop GUI (Electron/Tauri) for Windows and macOS
 - [ ] CLI for programmatic/headless use (connect, disconnect, switch modes, status)
 - [ ] Claude Code skill definition for the CLI commands
-- [ ] Server component that runs flexibly (Windows, Linux VM, dedicated device)
-- [ ] Lightweight relay/rendezvous server for NAT traversal and peer discovery (deployable on Vercel, AWS, any VPS, or free tier)
-- [ ] WireGuard key-based authentication (no user accounts needed)
 - [ ] Client onboarding: key generation and exchange via relay
 - [ ] Dynamic DNS support as secondary discovery method
 - [ ] Mode switching: ability to change between Full Gateway and LAN-Only without reconnecting (if possible) or with quick reconnect
-- [ ] Connection status display (connected/disconnected, current mode, latency, throughput)
 
 ### Out of Scope
 
@@ -56,11 +55,13 @@ Seamlessly access home LAN resources (SMB shares, local services, devices) from 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| WireGuard over OpenVPN | Faster, simpler, modern, kernel-level performance | — Pending |
-| Relay-first discovery | Avoids port-forwarding headaches; DDNS as fallback | — Pending |
-| Electron/Tauri for GUI | Single codebase for Windows + macOS | — Pending |
-| WireGuard keys only for auth | Simplicity; key exchange via relay handles onboarding | — Pending |
-| Focus relay mode first, DDNS second | Relay works without router config; lower barrier | — Pending |
+| WireGuard over OpenVPN | Faster, simpler, modern, kernel-level performance | Confirmed (Phase 1) |
+| Relay-first discovery | Avoids port-forwarding headaches; DDNS as fallback | Confirmed (Phase 1) |
+| Tauri for GUI | Smaller bundle, lower memory, future mobile support | Confirmed |
+| WireGuard keys only for auth | Simplicity; key exchange via relay handles onboarding | Confirmed (Phase 1) |
+| Focus relay mode first, DDNS second | Relay works without router config; lower barrier | Confirmed (Phase 1) |
+| Node.js crypto for WireGuard keygen | No binary deps; X25519 built into Node.js | Phase 1 |
+| Private key never in IPC responses | Enforced at type level (WireguardKeypair has no privateKey) | Phase 1 |
 
 ---
-*Last updated: 2025-03-11 after initialization*
+*Last updated: 2026-03-11 after Phase 1*
