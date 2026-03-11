@@ -34,8 +34,8 @@
 
 ### Client Daemon
 
-- [ ] **DAEM-01**: Background daemon manages WireGuard interface lifecycle
-- [ ] **DAEM-02**: Daemon generates and stores WireGuard keys in OS keychain
+- [x] **DAEM-01**: Background daemon manages WireGuard interface lifecycle
+- [x] **DAEM-02**: Daemon generates and stores WireGuard keys in OS keychain
 - [ ] **DAEM-03**: Daemon exposes HTTP IPC on localhost for GUI/CLI communication
 - [x] **DAEM-04**: Daemon is single source of truth for all connection state
 - [x] **DAEM-05**: Daemon publishes state changes via events (GUI/CLI subscribe)
@@ -136,8 +136,8 @@
 | RELY-02 | Phase 1 | Complete |
 | RELY-03 | Phase 1 | Complete |
 | RELY-04 | Phase 1 | Complete |
-| DAEM-01 | Phase 1 | Pending |
-| DAEM-02 | Phase 1 | Pending |
+| DAEM-01 | Phase 1 | Complete |
+| DAEM-02 | Phase 1 | Complete |
 | DAEM-03 | Phase 1 | Pending |
 | DAEM-04 | Phase 1 | Complete |
 | DAEM-05 | Phase 1 | Complete |

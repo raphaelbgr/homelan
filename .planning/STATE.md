@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-relay-daemon-foundation/01-01-PLAN.md
-last_updated: "2026-03-11T19:25:04.143Z"
+stopped_at: Completed 01-relay-daemon-foundation/01-03-PLAN.md
+last_updated: "2026-03-11T19:26:16Z"
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
-  percent: 40
+  completed_plans: 3
+  percent: 60
 ---
 
 # HomeLAN Project State
@@ -41,19 +41,19 @@ progress:
 
 **Milestone:** Phase 1 Execution In Progress
 **Active Phase:** 01-relay-daemon-foundation
-**Plan:** 01-02 COMPLETE, advancing to 01-03
-**Stopped At:** Completed 01-relay-daemon-foundation/01-02-PLAN.md
+**Plan:** 01-03 COMPLETE, advancing to 01-04
+**Stopped At:** Completed 01-relay-daemon-foundation/01-03-PLAN.md
 
-**Progress:** [████░░░░░░] 40%
+**Progress:** [██████░░░░] 60%
 
 ```
-Phase 1: Relay & Daemon Foundation       ████░░░░░░  Plan 2/5 done
+Phase 1: Relay & Daemon Foundation       ██████░░░░  Plan 3/5 done
 Phase 2: Tunnel + NAT + CLI             ░░░░░░░░░░  0%
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 9/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01, RELY-01, RELY-02, RELY-03, RELY-04, AUTH-03)
+Overall: 12/49 requirements completed (DAEM-01, DAEM-02, DAEM-04, DAEM-05, DAEM-06, AUTH-01, AUTH-03, RELY-01, RELY-02, RELY-03, RELY-04, AUTH-01)
 ```
 
 ---
@@ -85,6 +85,9 @@ Overall: 9/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01, RELY-0
 | createStore() async with dynamic import | Keeps better-sqlite3 native module out of serverless bundle for Vercel | 01-02 |
 | Hand-rolled rate limiter (no express-rate-limit) | Zero extra dependencies; trivial Map + timestamp logic sufficient | 01-02 |
 | httpsOnly skips in NODE_ENV=development | Local testing without TLS termination requires bypass | 01-02 |
+| generateKeypair() uses Node.js built-in crypto (X25519) | wireguard-tools@0.3 does not exist; package internals use unsafe shell interpolation; Node.js crypto produces identical Curve25519 keys with no binary dependency | 01-03 |
+| All daemon shell calls use execFileSafe(cmd, argsArray) | Args never interpolated into shell string — prevents command injection at the type+pattern level | 01-03 |
+| FileKeystore is canonical test double for OS keychain | Windows/macOS backends are integration-only; all unit tests use FileKeystore for CI safety | 01-03 |
 
 ---
 
@@ -117,7 +120,7 @@ Overall: 9/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01, RELY-0
 - TypeScript 5.x (strict mode, type safety)
 - Express.js 5.x (relay HTTP server)
 - Commander.js 12.x (CLI argument parsing)
-- wireguard-tools (key generation)
+- node:crypto generateKeyPairSync (WireGuard X25519 keygen, no binary dep)
 
 **Desktop GUI:**
 - Tauri 2.10.x (cross-platform, native OS WebView, Rust backend)
@@ -201,4 +204,16 @@ Overall: 9/49 requirements completed (DAEM-04, DAEM-05, DAEM-06, AUTH-01, RELY-0
 ---
 
 *State initialized: 2026-03-11*
-*Last updated: 2026-03-11 after 01-02 execution*
+**2026-03-11 - Plan 01-03 Execution (9 min)**
+- Implemented execFileSafe (execFile with args array, no shell injection) as sole shell executor
+- KeychainStore abstraction with Windows Credential Manager, macOS security CLI, and FileKeystore backends
+- generateKeypair() via Node.js built-in crypto (X25519) - no wg binary needed in dev/test
+- WireGuardInterface with configure/up/down/status and injected ShellExecutor for testability
+- StateMachine with VALID_TRANSITIONS table, StateTransitionError, synchronous listeners
+- 34 tests passing, TypeScript strict mode zero errors
+- Completed requirements: DAEM-01, DAEM-02, AUTH-01
+
+---
+
+*State initialized: 2026-03-11*
+*Last updated: 2026-03-11 after 01-03 execution*
