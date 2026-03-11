@@ -183,6 +183,19 @@ None - no external service configuration required. When deploying:
 - Plan 01-03 (daemon core) can begin - relay API is stable
 - Relay endpoint URLs needed before daemon client can connect (Phase 2)
 
+## Self-Check: PASSED
+
+All created files verified present. Both task commits verified in git log.
+
+- FOUND: packages/relay/src/app.ts
+- FOUND: packages/relay/src/config.ts
+- FOUND: packages/relay/src/store/sqlite.ts
+- FOUND: packages/relay/vercel.json
+- FOUND: packages/relay/Dockerfile
+- FOUND: .planning/phases/01-relay-daemon-foundation/01-02-SUMMARY.md
+- FOUND commit 39a495b (Task 1)
+- FOUND commit 3f63257 (Task 2)
+
 ---
 *Phase: 01-relay-daemon-foundation*
 *Completed: 2026-03-11*
