@@ -14,6 +14,8 @@ class MockDaemon {
   private _state: ConnectionState = "idle";
   private _startedAt = Date.now();
   private _listeners: Array<(next: ConnectionState, prev: ConnectionState) => void> = [];
+  switchModeCalledWith: string | null = null;
+  switchModeError: Error | null = null;
 
   get state(): ConnectionState {
     return this._state;
@@ -53,6 +55,17 @@ class MockDaemon {
     for (const fn of this._listeners) {
       fn(next, prev);
     }
+  }
+
+  async switchMode(mode: string): Promise<void> {
+    this.switchModeCalledWith = mode;
+    if (this.switchModeError) {
+      throw this.switchModeError;
+    }
+  }
+
+  onModeChange(_fn: (mode: string) => void): () => void {
+    return () => {};
   }
 }
 
@@ -269,12 +282,37 @@ describe("IPC server", () => {
     });
   });
 
-  // --- Stub POST endpoints still returning 501 ---
-  describe("POST stub endpoints", () => {
-    it("POST /switch-mode returns 501 NOT_IMPLEMENTED", async () => {
-      const res = await request(app).post("/switch-mode").send({});
-      expect(res.status).toBe(501);
-      expect(res.body.code).toBe("NOT_IMPLEMENTED");
+  // --- POST /switch-mode (real implementation) ---
+  describe("POST /switch-mode", () => {
+    it("returns 400 with invalid mode", async () => {
+      const res = await request(app).post("/switch-mode").send({ mode: "invalid" });
+      expect(res.status).toBe(400);
+      expect(res.body.ok).toBe(false);
+      expect(res.body.message).toMatch(/Invalid mode/);
+    });
+
+    it("returns 200 ok:true when mode is full-gateway", async () => {
+      const res = await request(app).post("/switch-mode").send({ mode: "full-gateway" });
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.message).toContain("full-gateway");
+      expect(daemon.switchModeCalledWith).toBe("full-gateway");
+    });
+
+    it("returns 200 ok:true when mode is lan-only", async () => {
+      const res = await request(app).post("/switch-mode").send({ mode: "lan-only" });
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.message).toContain("lan-only");
+      expect(daemon.switchModeCalledWith).toBe("lan-only");
+    });
+
+    it("returns 409 when switchMode throws (not connected)", async () => {
+      daemon.switchModeError = new Error("Not connected — cannot switch mode while not connected");
+      const res = await request(app).post("/switch-mode").send({ mode: "full-gateway" });
+      expect(res.status).toBe(409);
+      expect(res.body.ok).toBe(false);
+      expect(res.body.message).toMatch(/Not connected/);
     });
   });
 });
