@@ -7,7 +7,7 @@
 
 ### Tunnel Core
 
-- [ ] **TUNL-01**: Client establishes encrypted WireGuard P2P tunnel to home server
+- [x] **TUNL-01**: Client establishes encrypted WireGuard P2P tunnel to home server
 - [ ] **TUNL-02**: User can connect to home network from CLI (`homelan connect`)
 - [ ] **TUNL-03**: User can disconnect from home network from CLI (`homelan disconnect`)
 - [ ] **TUNL-04**: User can connect/disconnect from desktop GUI with one click
@@ -118,7 +118,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TUNL-01 | Phase 2 | Pending |
+| TUNL-01 | Phase 2 | Complete |
 | TUNL-02 | Phase 2 | Pending |
 | TUNL-03 | Phase 2 | Pending |
 | TUNL-04 | Phase 4 | Pending |

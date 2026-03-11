@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-11T20:09:51.900Z"
+status: unknown
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-11T20:19:51.107Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 7
-  percent: 64
+  completed_plans: 8
+  percent: 73
 ---
 
 # HomeLAN Project State
@@ -41,19 +41,19 @@ progress:
 
 **Milestone:** Phase 2 In Progress
 **Active Phase:** 02-tunnel-connectivity-nat-traversal
-**Plan:** 02-01 COMPLETE — NAT discovery layer (STUN + RelayClient)
-**Stopped At:** Completed 02-01-PLAN.md
+**Plan:** 02-03 COMPLETE — Core tunnel connection logic (holePunch + Daemon.connect/disconnect + IPC routes)
+**Stopped At:** Completed 02-03-PLAN.md
 
-**Progress:** [██████░░░░] 64% (7/11 plans done)
+**Progress:** [███████░░░] 73% (8/11 plans done)
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 5/5 done (COMPLETE)
-Phase 2: Tunnel + NAT + CLI             ██░░░░░░░░  Plan 1/5 done (In Progress)
+Phase 2: Tunnel + NAT + CLI             ███░░░░░░░  Plan 3/5 done (In Progress)
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 16/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01, NAT-02, NAT-04, NAT-05)
+Overall: 21/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01)
 ```
 
 ---
@@ -98,6 +98,10 @@ Overall: 16/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | Native fetch for RelayClient | Node.js 22 LTS ships fetch built-in; eliminates node-fetch dependency | 02-01 |
 | lookup() uses verbatim public key in URL | encodeURIComponent breaks base64 = padding matching on relay server | 02-01 |
 | startAutoRenew() catches errors silently | Daemon stays running during temporary relay outages; errors logged but not thrown | 02-01 |
+| Relay fallback endpoint = relay URL host:port | Relay proxies WG frames on same host; no separate config field needed | 02-03 |
+| holePunchFn injected into Daemon | Consistent with wgInterface injection pattern; enables unit-test isolation without module mocking | 02-03 |
+| IPC /connect reads config from env vars | RELAY_URL/RELAY_SECRET/PEER_PUBLIC_KEY from environment; simple for Phase 2 CLI | 02-03 |
+| Daemon transitions to error on connect() failure | Explicit error→idle reset path; callers (CLI/GUI) handle recovery | 02-03 |
 
 ---
 
@@ -263,3 +267,16 @@ Overall: 16/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Re-exported createRelayHandler from app.ts for convenience
 - 22 tests passing (18 existing HTTP + 4 new WebSocket tests), TypeScript build zero errors
 - Completed requirements: NAT-03
+
+---
+
+**2026-03-11 - Plan 02-03 Execution (5 min)**
+- Built UDP hole punching module (node:dgram, 200ms probe interval, HOMELAN probe packet, success/timeout)
+- Implemented Daemon.connect(): STUN→relay register→relay lookup→hole punch→WireGuard up; relay fallback when hole punch fails
+- Implemented Daemon.disconnect(): connected→disconnecting→idle, wgInterface.down()
+- Added onProgress() event emitter for connection progress (discovering_peer/trying_direct/trying_relay/connected)
+- Wired IPC POST /connect and POST /disconnect routes to delegate to daemon (no longer 501)
+- Added "connection_progress" to SseEventType in @homelan/shared
+- Fixed pre-existing TS strict errors in stun.ts buffer indexing
+- 78 tests passing (71 prior + 7 new), TypeScript build zero errors
+- Completed requirements: TUNL-01, NAT-01, NAT-02, NAT-03, NAT-05
