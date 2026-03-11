@@ -10,7 +10,7 @@
 ## Phases
 
 - [x] **Phase 1: Relay & Daemon Foundation** - Relay server + daemon core infrastructure (completed 2026-03-11)
-- [ ] **Phase 2: Tunnel Connectivity & NAT Traversal** - P2P tunnel + automatic discovery + CLI
+- [x] **Phase 2: Tunnel Connectivity & NAT Traversal** - P2P tunnel + automatic discovery + CLI (completed 2026-03-11)
 - [ ] **Phase 3: Mode Switching & Service Discovery** - Full Gateway/LAN-Only routing + device discovery
 - [ ] **Phase 4: Desktop GUI** - Tauri + React desktop client for Windows & macOS
 - [ ] **Phase 5: Onboarding & Fallback Reliability** - Key setup, DDNS fallback, Claude Code skill
@@ -61,7 +61,7 @@ Plans:
 5. IPv6 is disabled entirely in tunnel to prevent real IP leaks; user confirms tunnel is IPv6-safe with test tool
 6. `homelan status` returns JSON with connection state, current mode, latency, and throughput; output is machine-readable and reliable
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [ ] 02-01-PLAN.md — STUN client (RFC 5389) + relay HTTP client (register/lookup/auto-renew) in daemon
@@ -135,7 +135,7 @@ Plans:
 | Phase | Goal | Requirements | Success Criteria | Plans Complete | Status |
 |-------|------|--------------|------------------|-----------------|--------|
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
-| 2 | 5/6 | In Progress|  | 0/6 | Planned |
+| 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | Mode Switching + Discovery | 6 | 4 | 0/? | Not started |
 | 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |

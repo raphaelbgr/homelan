@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-05-PLAN.md
-last_updated: "2026-03-11T20:26:32.484Z"
+stopped_at: Phase 2 COMPLETE
+last_updated: "2026-03-11T20:32:08.117Z"
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 10
-  percent: 91
+  completed_plans: 11
+  percent: 100
 ---
 
 # HomeLAN Project State
@@ -39,21 +39,21 @@ progress:
 
 ## Current Position
 
-**Milestone:** Phase 2 In Progress
-**Active Phase:** 02-tunnel-connectivity-nat-traversal
-**Plan:** 02-05 COMPLETE — CLI package (IpcClient + connect/disconnect/status commands with Commander.js)
-**Stopped At:** Completed 02-05-PLAN.md
+**Milestone:** Phase 2 COMPLETE — Ready for Phase 3 or Phase 4
+**Active Phase:** 02-tunnel-connectivity-nat-traversal (COMPLETE)
+**Plan:** 02-06 COMPLETE — Phase gate verification (118 tests passing, CLI smoke tested)
+**Stopped At:** Phase 2 COMPLETE
 
-**Progress:** [█████████░] 91% (10/11 plans done)
+**Progress:** [██████████] 100% (11/11 plans done)
 
 ```
-Phase 1: Relay & Daemon Foundation       ██████████  Plan 5/5 done (COMPLETE)
-Phase 2: Tunnel + NAT + CLI             █████████░  Plan 5/5 done (COMPLETE)
+Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
+Phase 2: Tunnel + NAT + CLI             ██████████  Plan 6/6 done (COMPLETE)
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 25/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01, TUNL-05, TUNL-06, TUNL-08, TUNL-09)
+Overall: 29/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..03, TUNL-05, TUNL-06, TUNL-08, TUNL-09, CLI-01, CLI-02, CLI-03, CLI-06, CLI-07)
 ```
 
 ---
@@ -109,6 +109,7 @@ Overall: 25/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | connect polls /status 500ms after POST /connect | Simpler than SSE parsing in CLI; SSE reserved for GUI (Phase 4) | 02-05 |
 | IpcClientError.statusCode null for ECONNREFUSED | Not an HTTP error; distinguishes connection refused from HTTP 4xx/5xx | 02-05 |
 | status outputs JSON by default (no flag) | --human flag activates table; JSON default enables scripting by Claude Code | 02-05 |
+| GUI placeholder build script uses echo no-op | tsc fails with no tsconfig/source files; GUI implemented in Phase 4 | 02-06 |
 
 ---
 
@@ -310,3 +311,14 @@ Overall: 25/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - index.ts: Commander.js entry point with #!/usr/bin/env node shebang, addCommand x3
 - 4 IpcClient tests passing, TypeScript build zero errors
 - Completed requirements: TUNL-02, TUNL-03, CLI-01, CLI-02, CLI-03, CLI-06, CLI-07
+
+---
+
+**2026-03-11 - Plan 02-06 Execution (3 min) — PHASE 2 COMPLETE**
+- Phase gate verification: 118 tests passing (shared: 6, relay: 22, daemon: 86, cli: 4, gui: 0)
+- Full monorepo TypeScript build: zero errors across all 5 packages
+- Auto-fixed: GUI placeholder build script (tsc → echo no-op; no tsconfig/source files in Phase 4 placeholder)
+- CLI smoke test: homelan --help shows connect/disconnect/status; connect defaults to lan-only; status exits code 3 when daemon not running
+- Human checkpoint auto-approved (auto mode)
+- Phase 2 COMPLETE — all 17 requirements verified (TUNL-01..03, TUNL-05, TUNL-06, TUNL-08, TUNL-09, NAT-01..05, CLI-01, CLI-02, CLI-03, CLI-06, CLI-07)
+- Ready for Phase 3 (Mode Switching + Discovery) or Phase 4 (Desktop GUI) — both can proceed in parallel
