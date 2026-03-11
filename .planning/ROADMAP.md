@@ -112,7 +112,12 @@ Plans:
 5. Error states are shown with actionable messages (e.g., "Relay unreachable. Check network connection." instead of generic errors)
 6. System tray icon shows connection state (connected/disconnected); clicking tray icon toggles connection or opens app
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Tauri 2.x + React 19 + Vite + Tailwind scaffold + shadcn/ui primitives
+- [ ] 04-02-PLAN.md — Dashboard UI: Connect button, mode toggle, status, device list, SSE integration, error states
+- [ ] 04-03-PLAN.md — System tray icon + minimize-to-tray + tray context menu + human verification
 
 ---
 
@@ -142,7 +147,7 @@ Plans:
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
-| 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
+| 4 | Desktop GUI | 8 | 6 | 0/3 | Planning |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
 
 **Total Coverage:** 49/49 requirements mapped ✓
@@ -150,6 +155,6 @@ Plans:
 ---
 
 *Roadmap created: 2026-03-11*
-*Last updated: 2026-03-11 after Phase 3 planning*
+*Last updated: 2026-03-11 after Phase 4 planning*
 *Granularity: Coarse (5 phases, 6-17 requirements per phase)*
 *Research-informed structure: Relay first (dependency), Daemon+NAT second (core functionality), Mode Switching third (differentiator), GUI fourth (visual layer), Onboarding+Fallback fifth (polish)*
