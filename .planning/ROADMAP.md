@@ -11,7 +11,7 @@
 
 - [x] **Phase 1: Relay & Daemon Foundation** - Relay server + daemon core infrastructure (completed 2026-03-11)
 - [x] **Phase 2: Tunnel Connectivity & NAT Traversal** - P2P tunnel + automatic discovery + CLI (completed 2026-03-11)
-- [ ] **Phase 3: Mode Switching & Service Discovery** - Full Gateway/LAN-Only routing + device discovery
+- [x] **Phase 3: Mode Switching & Service Discovery** - Full Gateway/LAN-Only routing + device discovery (completed 2026-03-11)
 - [ ] **Phase 4: Desktop GUI** - Tauri + React desktop client for Windows & macOS
 - [ ] **Phase 5: Onboarding & Fallback Reliability** - Key setup, DDNS fallback, Claude Code skill
 
@@ -87,7 +87,7 @@ Plans:
 3. Device list updates automatically while connected (daemon polls home network for new/removed devices); user runs command multiple times and sees additions reflected
 4. Routing tables are correctly configured per mode: Full Gateway routes default 0.0.0.0/0 via tunnel except local subnet; LAN-Only routes only home subnet via tunnel
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — Daemon.switchMode() + IPC /switch-mode route + homelan switch-mode CLI command
@@ -141,7 +141,7 @@ Plans:
 |-------|------|--------------|------------------|-----------------|--------|
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
-| 3 | 1/3 | In Progress|  | 0/3 | Planning |
+| 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
 | 4 | Desktop GUI | 8 | 6 | 0/? | Not started |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
 
