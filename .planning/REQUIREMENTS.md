@@ -19,11 +19,11 @@
 
 ### NAT Traversal & Discovery
 
-- [ ] **NAT-01**: Client automatically discovers home server via relay without manual port forwarding
-- [ ] **NAT-02**: UDP hole punching attempts direct P2P connection first (3-5s timeout)
+- [x] **NAT-01**: Client automatically discovers home server via relay without manual port forwarding
+- [x] **NAT-02**: UDP hole punching attempts direct P2P connection first (3-5s timeout)
 - [x] **NAT-03**: If hole punching fails, traffic falls back through relay
-- [ ] **NAT-04**: Three-tier fallback: relay → DDNS → hardcoded IP
-- [ ] **NAT-05**: Connection attempt shows real-time progress (trying direct → trying relay → trying DDNS)
+- [x] **NAT-04**: Three-tier fallback: relay → DDNS → hardcoded IP
+- [x] **NAT-05**: Connection attempt shows real-time progress (trying direct → trying relay → trying DDNS)
 
 ### Relay Server
 
@@ -127,11 +127,11 @@
 | TUNL-07 | Phase 3 | Pending |
 | TUNL-08 | Phase 2 | Pending |
 | TUNL-09 | Phase 2 | Pending |
-| NAT-01 | Phase 2 | Pending |
-| NAT-02 | Phase 2 | Pending |
+| NAT-01 | Phase 2 | Complete |
+| NAT-02 | Phase 2 | Complete |
 | NAT-03 | Phase 2 | Complete |
-| NAT-04 | Phase 2 | Pending |
-| NAT-05 | Phase 2 | Pending |
+| NAT-04 | Phase 2 | Complete |
+| NAT-05 | Phase 2 | Complete |
 | RELY-01 | Phase 1 | Complete |
 | RELY-02 | Phase 1 | Complete |
 | RELY-03 | Phase 1 | Complete |

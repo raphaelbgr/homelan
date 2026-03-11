@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-11T20:08:43.948Z"
+status: in_progress
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-11T20:09:51.900Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
-  percent: 55
+  completed_plans: 7
+  percent: 64
 ---
 
 # HomeLAN Project State
@@ -41,19 +41,19 @@ progress:
 
 **Milestone:** Phase 2 In Progress
 **Active Phase:** 02-tunnel-connectivity-nat-traversal
-**Plan:** 02-02 COMPLETE — WebSocket relay endpoint
-**Stopped At:** Completed 02-02-PLAN.md
+**Plan:** 02-01 COMPLETE — NAT discovery layer (STUN + RelayClient)
+**Stopped At:** Completed 02-01-PLAN.md
 
-**Progress:** [██████░░░░] 55%
+**Progress:** [██████░░░░] 64% (7/11 plans done)
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 5/5 done (COMPLETE)
-Phase 2: Tunnel + NAT + CLI             ██░░░░░░░░  Plan 1/6 done (In Progress)
+Phase 2: Tunnel + NAT + CLI             ██░░░░░░░░  Plan 1/5 done (In Progress)
 Phase 3: Mode Switching + Discovery     ░░░░░░░░░░  0%
 Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 13/49 requirements completed (RELY-01, RELY-02, RELY-03, RELY-04, DAEM-01, DAEM-02, DAEM-03, DAEM-04, DAEM-05, DAEM-06, AUTH-01, AUTH-03, NAT-03)
+Overall: 16/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01, NAT-02, NAT-04, NAT-05)
 ```
 
 ---
@@ -94,6 +94,10 @@ Overall: 13/49 requirements completed (RELY-01, RELY-02, RELY-03, RELY-04, DAEM-
 | vitest --passWithNoTests for empty packages | Prevents pnpm -r test exit code 1 from cli/gui packages with no tests yet in Phase 1 | 01-05 |
 | createRelayHandler accepts pairingTimeoutMs option | Enables fast test (200ms) without mocking timers; production default is 10s | 02-02 |
 | Binary WS frames proxied as-is with isBinary flag | Preserves WireGuard UDP frame integrity; no re-encoding overhead | 02-02 |
+| Raw dgram STUN client (no external library) | Zero new npm dependencies; dgram is built-in and sufficient for RFC 5389 parsing | 02-01 |
+| Native fetch for RelayClient | Node.js 22 LTS ships fetch built-in; eliminates node-fetch dependency | 02-01 |
+| lookup() uses verbatim public key in URL | encodeURIComponent breaks base64 = padding matching on relay server | 02-01 |
+| startAutoRenew() catches errors silently | Daemon stays running during temporary relay outages; errors logged but not thrown | 02-01 |
 
 ---
 
@@ -240,8 +244,17 @@ Overall: 13/49 requirements completed (RELY-01, RELY-02, RELY-03, RELY-04, DAEM-
 
 ---
 
+**2026-03-11 - Plan 02-01 Execution (3 min)**
+- Built pure-Node.js STUN client (node:dgram, RFC 5389 XOR-MAPPED-ADDRESS) with no external dependencies
+- Built RelayClient using native fetch (Node.js 22 built-in): register(), lookup(), startAutoRenew()
+- Added StunResult, ConnectionProgress, NatTraversalConfig types to @homelan/shared
+- 69 tests passing (61 prior + 3 STUN + 5 relay client), TypeScript build zero errors
+- Completed requirements: NAT-01, NAT-02, NAT-04, NAT-05
+
+---
+
 *State initialized: 2026-03-11*
-*Last updated: 2026-03-11 after Phase 1 completion — transitioning to Phase 2*
+*Last updated: 2026-03-11 after Plan 02-01 (NAT discovery layer)*
 
 **2026-03-11 - Plan 02-02 Execution (5 min)**
 - Added ws@^8.17.0 runtime dep and @types/ws devDep to relay package
