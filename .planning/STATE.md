@@ -3,6 +3,21 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-03-11T23:25:27Z"
+progress:
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 23
+  completed_plans: 23
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
 stopped_at: Completed 05-03-PLAN.md
 last_updated: "2026-03-12T02:24:45.066Z"
 progress:
@@ -39,12 +54,12 @@ progress:
 
 ## Current Position
 
-**Milestone:** Phase 4 COMPLETE
+**Milestone:** ALL PHASES COMPLETE
 **Active Phase:** 05-onboarding-fallback-reliability (complete)
-**Plan:** 05-05 COMPLETE — Claude Code skill definition (SKILL.md + rules/commands.md)
-**Stopped At:** Completed 05-03-PLAN.md
+**Plan:** 05-04 COMPLETE — GUI onboarding wizard (usePairing hook, OnboardingWizard, Pair Device button)
+**Stopped At:** Completed 05-04-PLAN.md
 
-**Progress:** [█████████░] 91%
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
@@ -53,7 +68,7 @@ Phase 3: Mode Switching + Discovery     ██████████  Plan 3/3
 Phase 4: Desktop GUI                    ██████████  Plan 3/3 done (COMPLETE)
 Phase 5: Onboarding + Fallback          ██████████  Plan 5/5 done (COMPLETE)
 
-Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..07, CLDE-01..04)
+Overall: 54/54 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01..04, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..07, CLDE-01..04)
 ```
 
 ---
@@ -120,6 +135,8 @@ Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | HistoryLogger uses synchronous fs ops | Low-frequency writes don't warrant async; sync is simpler and predictable; best-effort append never blocks connection | 05-02 |
 | DnsResolverFn injectable (default: dns.promises.resolve4) | Enables DDNS test isolation without module mocking; consistent with holePunchFn/lanScanner injection pattern | 05-02 |
 | historyLogger public getter on Daemon | Avoids separate HistoryLogger injection into IPC server; historyRouter accesses via daemon.historyLogger | 05-02 |
+| usePairing.pair() returns Promise<boolean> | Avoids stale React state closure when advancing wizard step after async pair() call | 05-04 |
+| OnboardingWizard as overlay triggered by Pair Device button | Simpler than auto-detecting first-run; works for re-pairing; avoids unreliable "is paired?" heuristic | 05-04 |
 
 ---
 
@@ -434,3 +451,13 @@ Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Created POST /pair IPC route (400/409/500 error handling) and GET /history IPC route (limit param, max 100)
 - 29 new tests added; 159 total daemon tests passing (up from 130); zero TypeScript errors
 - Completed requirements: AUTH-02
+
+---
+
+**2026-03-11 - Plan 05-04 Execution (4 min)**
+- Created usePairing hook: pair() calls POST /pair IPC, returns Promise<boolean> to enable clean step advancement without stale closure
+- Created OnboardingWizard component: 2-step flow — Step 1 invite URL input with loading/error states, Step 2 CheckCircle2 success + Get Started
+- Updated App.tsx: showOnboarding state, Pair Device button in header (hidden when connected), fixed full-screen overlay
+- Installed qrcode + @types/qrcode packages (available for future QR display)
+- Zero TypeScript errors; all 159 daemon tests still passing
+- Completed requirements: AUTH-04
