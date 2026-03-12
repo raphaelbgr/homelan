@@ -9,6 +9,9 @@ import type { Application } from "express";
 import type { ConnectionState, LanDevice } from "@homelan/shared";
 import type { IpcStatusResponse } from "@homelan/shared";
 
+import type { HistoryEntry } from "../history/logger.js";
+import { RelayClientError } from "../nat/relayClient.js";
+
 // ---- Minimal Daemon stub (injected into createIpcServer) ----
 class MockDaemon {
   private _state: ConnectionState = "idle";
@@ -16,6 +19,9 @@ class MockDaemon {
   private _listeners: Array<(next: ConnectionState, prev: ConnectionState) => void> = [];
   switchModeCalledWith: string | null = null;
   switchModeError: Error | null = null;
+  pairCalledWith: string | null = null;
+  pairError: Error | null = null;
+  historyEntries: HistoryEntry[] = [];
 
   get state(): ConnectionState {
     return this._state;
@@ -66,6 +72,19 @@ class MockDaemon {
 
   onModeChange(_fn: (mode: string) => void): () => void {
     return () => {};
+  }
+
+  async pair(inviteUrl: string): Promise<void> {
+    this.pairCalledWith = inviteUrl;
+    if (this.pairError) {
+      throw this.pairError;
+    }
+  }
+
+  get historyLogger() {
+    return {
+      getEntries: (limit: number = 20) => this.historyEntries.slice(-limit),
+    };
   }
 }
 
@@ -313,6 +332,85 @@ describe("IPC server", () => {
       expect(res.status).toBe(409);
       expect(res.body.ok).toBe(false);
       expect(res.body.message).toMatch(/Not connected/);
+    });
+  });
+
+  // --- POST /pair ---
+  describe("POST /pair", () => {
+    const VALID_INVITE_URL = "homelan://pair?token=abc123&relay=https%3A%2F%2Frelay.example.com";
+
+    it("returns 400 when inviteUrl is missing", async () => {
+      const res = await request(app).post("/pair").send({});
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
+    });
+
+    it("returns 400 when inviteUrl is empty string", async () => {
+      const res = await request(app).post("/pair").send({ inviteUrl: "" });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
+    });
+
+    it("returns 409 when daemon state is not idle (cannot pair while connected)", async () => {
+      daemon._triggerTransition("connected", "idle");
+      const res = await request(app).post("/pair").send({ inviteUrl: VALID_INVITE_URL });
+      expect(res.status).toBe(409);
+      expect(res.body.error).toBeDefined();
+    });
+
+    it("returns 200 ok:true with serverPublicKey on success", async () => {
+      const res = await request(app).post("/pair").send({ inviteUrl: VALID_INVITE_URL });
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(daemon.pairCalledWith).toBe(VALID_INVITE_URL);
+    });
+
+    it("returns 500 with PAIR_FAILED code on RelayClientError", async () => {
+      daemon.pairError = new RelayClientError("Pair failed", "PAIR_FAILED");
+      const res = await request(app).post("/pair").send({ inviteUrl: VALID_INVITE_URL });
+      expect(res.status).toBe(500);
+      expect(res.body.code).toBe("PAIR_FAILED");
+    });
+  });
+
+  // --- GET /history ---
+  describe("GET /history", () => {
+    it("returns 200 with entries array", async () => {
+      const res = await request(app).get("/history");
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("entries");
+      expect(Array.isArray(res.body.entries)).toBe(true);
+    });
+
+    it("returns entries from daemon.historyLogger.getEntries()", async () => {
+      daemon.historyEntries = [
+        { timestamp: "2026-01-01T00:00:00.000Z", action: "connect", mode: "lan-only" },
+        { timestamp: "2026-01-01T00:01:00.000Z", action: "disconnect", duration_ms: 60000 },
+      ];
+      const res = await request(app).get("/history");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(2);
+    });
+
+    it("respects limit query param", async () => {
+      daemon.historyEntries = Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=5");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(5);
+    });
+
+    it("clamps limit to max 100", async () => {
+      daemon.historyEntries = Array.from({ length: 200 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=200");
+      expect(res.status).toBe(200);
+      // Should be clamped to 100
+      expect(res.body.entries.length).toBeLessThanOrEqual(100);
     });
   });
 });

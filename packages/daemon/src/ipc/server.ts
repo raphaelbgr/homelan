@@ -6,6 +6,8 @@ import { eventsRouter } from "./routes/events.js";
 import { connectRouter } from "./routes/connect.js";
 import { disconnectRouter } from "./routes/disconnect.js";
 import { switchModeRouter } from "./routes/switchMode.js";
+import { pairRouter } from "./routes/pair.js";
+import { historyRouter } from "./routes/history.js";
 
 export type IpcServer = Express;
 
@@ -33,6 +35,8 @@ export function createIpcServer(daemon: Daemon): Express {
   app.use("/connect", connectRouter(daemon));
   app.use("/disconnect", disconnectRouter(daemon));
   app.use("/switch-mode", switchModeRouter(daemon));
+  app.use("/pair", pairRouter(daemon));
+  app.use("/history", historyRouter(daemon));
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true, uptimeMs: daemon.uptimeMs });
