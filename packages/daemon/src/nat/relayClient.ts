@@ -1,4 +1,4 @@
-import type { LookupResponse } from "@homelan/shared";
+import type { LookupResponse, PairResponse } from "@homelan/shared";
 
 export type { LookupResponse };
 
@@ -97,6 +97,83 @@ export class RelayClient {
     }
 
     return response.json() as Promise<LookupResponse>;
+  }
+
+  /**
+   * POST /pair — exchange a pairing invite token for the server's public key.
+   * Accepts an invite URL in the format: homelan://pair?token=<token>&relay=<relayUrl>
+   * Returns PairResponse { serverPublicKey, relayUrl }.
+   * Throws RelayClientError on non-200 or invalid URL.
+   */
+  async pair(inviteUrl: string): Promise<PairResponse> {
+    let token: string;
+    let targetRelayUrl: string;
+
+    try {
+      // URL constructor works with custom schemes like homelan://
+      const url = new URL(inviteUrl);
+      token = url.searchParams.get("token") ?? "";
+      targetRelayUrl = url.searchParams.get("relay") ?? "";
+    } catch {
+      throw new RelayClientError(
+        `Invalid invite URL: ${inviteUrl}`,
+        "INVALID_INVITE_URL"
+      );
+    }
+
+    if (!token) {
+      throw new RelayClientError(
+        "Invite URL missing token parameter",
+        "INVALID_INVITE_URL"
+      );
+    }
+
+    if (!targetRelayUrl) {
+      throw new RelayClientError(
+        "Invite URL missing relay parameter",
+        "INVALID_INVITE_URL"
+      );
+    }
+
+    const cleanRelayUrl = targetRelayUrl.replace(/\/$/, "");
+    const body = JSON.stringify({
+      token,
+      clientPublicKey: this.publicKey,
+    });
+
+    const response = await fetch(`${cleanRelayUrl}/pair`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.relaySecret}`,
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      let code = "PAIR_FAILED";
+      try {
+        const json = (await response.json()) as { code?: string };
+        if (json.code) code = json.code;
+      } catch {
+        // ignore JSON parse errors
+      }
+      throw new RelayClientError(
+        `Pair failed with HTTP ${response.status}`,
+        code
+      );
+    }
+
+    const result = (await response.json()) as Partial<PairResponse>;
+
+    if (!result.serverPublicKey || !result.relayUrl) {
+      throw new RelayClientError(
+        "Pair response missing required fields",
+        "INVALID_PAIR_RESPONSE"
+      );
+    }
+
+    return result as PairResponse;
   }
 
   /**

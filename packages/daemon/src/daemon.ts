@@ -16,13 +16,17 @@ import { WireGuardInterface, type WgInterfaceConfig } from "./wireguard/interfac
 import { createDnsConfigurator, type DnsConfigurator } from "./platform/dns.js";
 import { createIPv6Blocker, type IPv6Blocker } from "./platform/ipv6.js";
 import { scanLanDevices } from "./platform/arp.js";
+import { HistoryLogger } from "./history/logger.js";
+import dns from "node:dns/promises";
 
 export type StunResolverFn = typeof resolveExternalEndpoint;
 export type RelayClientFactory = (opts: {
   relayUrl: string;
   relaySecret: string;
   publicKey: string;
-}) => Pick<RelayClient, "register" | "lookup" | "startAutoRenew">;
+}) => Pick<RelayClient, "register" | "lookup" | "startAutoRenew" | "pair">;
+
+export type DnsResolverFn = (hostname: string) => Promise<string[]>;
 export type HolePunchFn = typeof attemptHolePunch;
 export type LanScannerFn = typeof scanLanDevices;
 
@@ -44,6 +48,8 @@ export class Daemon {
   private _lanDevices: LanDevice[] = [];
   private _discoveryTimer: NodeJS.Timeout | null = null;
   private _deviceListeners: DevicesListener[] = [];
+  private _connectedAt: number | null = null;
+  private _relayClient: ReturnType<RelayClientFactory> | null = null;
 
   constructor(
     private readonly keychain: KeychainStore = getKeychain(),
@@ -56,7 +62,10 @@ export class Daemon {
     private readonly dnsConfigurator: DnsConfigurator = createDnsConfigurator(),
     private readonly ipv6Blocker: IPv6Blocker = createIPv6Blocker(),
     private readonly lanScanner: LanScannerFn = scanLanDevices,
-    private readonly discoveryIntervalMs: number = 30_000
+    private readonly discoveryIntervalMs: number = 30_000,
+    private readonly ddnsHostname: string | undefined = undefined,
+    private readonly _historyLogger: HistoryLogger = new HistoryLogger(),
+    private readonly dnsResolver: DnsResolverFn = (hostname) => dns.resolve4(hostname)
   ) {}
 
   async start(): Promise<void> {
@@ -113,6 +122,7 @@ export class Daemon {
         relaySecret: config.relaySecret,
         publicKey: this._publicKey ?? "",
       });
+      this._relayClient = relayClient;
 
       this.emitProgress("discovering_peer");
       await relayClient.register(myEndpoint);
@@ -127,15 +137,40 @@ export class Daemon {
         config.holePunchTimeoutMs
       );
 
-      // 4. Determine WireGuard endpoint — direct or relay fallback
+      // 4. Determine WireGuard endpoint — direct, relay, or DDNS fallback
       let wgEndpoint: string;
+      let fallbackMethod: "direct" | "relay" | "ddns" | "hardcoded";
       if (holePunchResult.success) {
         wgEndpoint = peerEndpoint;
+        fallbackMethod = "direct";
       } else {
         this.emitProgress("trying_relay");
-        // Parse relay URL to extract host:port for use as WireGuard peer endpoint
-        // The relay proxies WireGuard UDP frames on a dedicated port
-        wgEndpoint = relayUrlToWgEndpoint(config.relayUrl);
+        // Try DDNS fallback after relay fails (before hardcoded IP)
+        if (this.ddnsHostname) {
+          try {
+            this.emitProgress("trying_ddns");
+            const ips = await this.dnsResolver(this.ddnsHostname);
+            const ddnsIp = ips[0];
+            if (ddnsIp) {
+              // Use DDNS-resolved IP — extract port from peer endpoint
+              const peerPort = peerEndpoint.split(":").pop() ?? "51820";
+              wgEndpoint = `${ddnsIp}:${peerPort}`;
+              fallbackMethod = "ddns";
+            } else {
+              wgEndpoint = relayUrlToWgEndpoint(config.relayUrl);
+              fallbackMethod = "relay";
+            }
+          } catch {
+            // DDNS resolution failed — fall back to relay
+            wgEndpoint = relayUrlToWgEndpoint(config.relayUrl);
+            fallbackMethod = "relay";
+          }
+        } else {
+          // Parse relay URL to extract host:port for use as WireGuard peer endpoint
+          // The relay proxies WireGuard UDP frames on a dedicated port
+          wgEndpoint = relayUrlToWgEndpoint(config.relayUrl);
+          fallbackMethod = "relay";
+        }
       }
 
       // 5. Configure and bring up WireGuard interface
@@ -175,13 +210,38 @@ export class Daemon {
       }
 
       this._mode = config.mode;
+      this._connectedAt = Date.now();
       this.stateMachine.transition("connected");
       this.emitProgress("connected");
+
+      // Log connect event to history
+      try {
+        this._historyLogger.append({
+          timestamp: new Date().toISOString(),
+          action: "connect",
+          mode: config.mode,
+          peer_endpoint: wgEndpoint,
+          fallback_method: fallbackMethod,
+        });
+      } catch {
+        // History logging is best-effort — never block the connection
+      }
+
       this.startDeviceDiscovery();
     } catch (err) {
       // On failure, try to transition to error state
       try {
         this.stateMachine.transition("error");
+        // Log error to history
+        try {
+          this._historyLogger.append({
+            timestamp: new Date().toISOString(),
+            action: "error",
+            error: err instanceof Error ? err.message : String(err),
+          });
+        } catch {
+          // best-effort
+        }
       } catch {
         // State machine may already be in error or invalid state — ignore
       }
@@ -209,8 +269,22 @@ export class Daemon {
       console.warn("[daemon] DNS/IPv6 policy restore failed:", policyErr);
     }
 
+    // Log disconnect event with duration
+    const durationMs = this._connectedAt !== null ? Date.now() - this._connectedAt : undefined;
+    try {
+      this._historyLogger.append({
+        timestamp: new Date().toISOString(),
+        action: "disconnect",
+        mode: this._mode ?? undefined,
+        duration_ms: durationMs,
+      });
+    } catch {
+      // best-effort
+    }
+
     this._mode = null;
     this._wgConfig = null;
+    this._connectedAt = null;
     this.stopDeviceDiscovery();
     this.stateMachine.transition("idle");
   }
@@ -265,6 +339,17 @@ export class Daemon {
 
     this._mode = newMode;
     this.emitModeChange(newMode);
+
+    // Log mode switch to history
+    try {
+      this._historyLogger.append({
+        timestamp: new Date().toISOString(),
+        action: "mode_switch",
+        mode: newMode,
+      });
+    } catch {
+      // best-effort
+    }
   }
 
   /**
@@ -372,6 +457,27 @@ export class Daemon {
 
   get publicKey(): string | null {
     return this._publicKey;
+  }
+
+  get historyLogger(): HistoryLogger {
+    return this._historyLogger;
+  }
+
+  /**
+   * Exchange a pairing invite URL for the server's public key.
+   * Stores the server public key in the keychain after successful pairing.
+   */
+  async pair(inviteUrl: string): Promise<void> {
+    // Use the relay client from last connect, or create a temporary one
+    const relayClient = this._relayClient ?? this.relayClientFactory({
+      relayUrl: "",
+      relaySecret: process.env["RELAY_SECRET"] ?? "",
+      publicKey: this._publicKey ?? "",
+    });
+
+    const pairResponse = await relayClient.pair(inviteUrl);
+    await this.keychain.store("homelan/server-public-key", pairResponse.serverPublicKey);
+    await this.keychain.store("homelan/relay-url", pairResponse.relayUrl);
   }
 
   onStateChange(

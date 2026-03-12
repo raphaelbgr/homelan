@@ -2,7 +2,7 @@
  * Daemon connect/disconnect tests — uses vi.fn() mocks for all injected
  * dependencies (stun, relayClient, holePunch, wgInterface, dnsConfigurator, ipv6Blocker).
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { NatTraversalConfig, TunnelMode, ConnectionProgress } from "@homelan/shared";
 import { Daemon } from "./daemon.js";
 import { FileKeystore } from "./keychain/filestore.js";
@@ -221,5 +221,282 @@ describe("Daemon.connect() / Daemon.disconnect()", () => {
 
     expect(mockIPv6Blocker.restoreIPv6).toHaveBeenCalledWith("homelan");
     expect(mockDnsConfigurator.restoreDns).toHaveBeenCalledWith("homelan");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DDNS fallback tests
+// ---------------------------------------------------------------------------
+
+import { HistoryLogger } from "./history/logger.js";
+import type { HistoryEntry } from "./history/logger.js";
+import os from "node:os";
+import path from "node:path";
+import fs from "node:fs";
+
+function makeTmpHistoryPath(): string {
+  return path.join(
+    os.tmpdir(),
+    `homelan-daemon-history-${Date.now()}-${Math.random().toString(36).slice(2)}.jsonl`
+  );
+}
+
+describe("Daemon.connect() — DDNS fallback", () => {
+  let keystore: FileKeystore;
+  let stateMachine: StateMachine;
+  let mockStunResolver: ReturnType<typeof vi.fn>;
+  let mockRelayClientFactory: ReturnType<typeof vi.fn>;
+  let mockRegister: ReturnType<typeof vi.fn>;
+  let mockLookup: ReturnType<typeof vi.fn>;
+  let mockHolePunchFn: ReturnType<typeof vi.fn>;
+  let mockWgInterface: {
+    configure: ReturnType<typeof vi.fn>;
+    up: ReturnType<typeof vi.fn>;
+    down: ReturnType<typeof vi.fn>;
+    status: ReturnType<typeof vi.fn>;
+  };
+  let mockDnsConfigurator: DnsConfigurator;
+  let mockIPv6Blocker: IPv6Blocker;
+
+  beforeEach(() => {
+    keystore = makeTmpKeystore();
+    stateMachine = new StateMachine();
+
+    mockStunResolver = vi.fn().mockResolvedValue(MOCK_STUN_RESULT);
+
+    mockRegister = vi.fn().mockResolvedValue(undefined);
+    mockLookup = vi.fn().mockResolvedValue(MOCK_LOOKUP_RESPONSE);
+    mockRelayClientFactory = vi.fn().mockReturnValue({
+      register: mockRegister,
+      lookup: mockLookup,
+      startAutoRenew: vi.fn().mockReturnValue(() => {}),
+    });
+
+    // Hole punch fails by default for DDNS tests
+    mockHolePunchFn = vi.fn().mockResolvedValue({
+      success: false,
+      confirmedEndpoint: null,
+    } satisfies HolePunchResult);
+
+    mockWgInterface = {
+      configure: vi.fn(),
+      up: vi.fn().mockResolvedValue(undefined),
+      down: vi.fn().mockResolvedValue(undefined),
+      status: vi.fn().mockResolvedValue({ isUp: false, peers: [] }),
+    };
+
+    mockDnsConfigurator = {
+      setDns: vi.fn().mockResolvedValue(undefined),
+      restoreDns: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockIPv6Blocker = {
+      blockIPv6: vi.fn().mockResolvedValue(undefined),
+      restoreIPv6: vi.fn().mockResolvedValue(undefined),
+    };
+  });
+
+  it("emits trying_ddns progress step when DDNS hostname is configured and relay fallback is used", async () => {
+    const mockDnsResolver = vi.fn().mockResolvedValue(["10.0.0.1"]);
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      mockStunResolver,
+      mockRelayClientFactory,
+      mockHolePunchFn,
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker,
+      undefined, // lanScanner
+      30_000,    // discoveryIntervalMs
+      "home.example.dyndns.org", // ddnsHostname
+      undefined, // historyLogger
+      mockDnsResolver
+    );
+    await daemon.start();
+
+    const progressEvents: ConnectionProgress[] = [];
+    daemon.onProgress((p) => progressEvents.push(p));
+
+    await daemon.connect(BASE_CONFIG);
+
+    expect(progressEvents).toContain("trying_ddns");
+    expect(mockDnsResolver).toHaveBeenCalledWith("home.example.dyndns.org");
+  });
+
+  it("does NOT emit trying_ddns when no ddnsHostname configured", async () => {
+    // Hole punch fails, but still connects via relay (no DDNS)
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      mockStunResolver,
+      mockRelayClientFactory,
+      mockHolePunchFn,
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker,
+    );
+    await daemon.start();
+
+    const progressEvents: ConnectionProgress[] = [];
+    daemon.onProgress((p) => progressEvents.push(p));
+
+    await daemon.connect(BASE_CONFIG);
+
+    expect(progressEvents).not.toContain("trying_ddns");
+  });
+
+  it("uses DDNS-resolved IP as WireGuard peer endpoint when configured", async () => {
+    const ddnsIp = "203.0.113.42";
+    const mockDnsResolver = vi.fn().mockResolvedValue([ddnsIp]);
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      mockStunResolver,
+      mockRelayClientFactory,
+      mockHolePunchFn,
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker,
+      undefined,
+      30_000,
+      "home.dyndns.org",
+      undefined,
+      mockDnsResolver
+    );
+    await daemon.start();
+
+    await daemon.connect(BASE_CONFIG);
+
+    // WG should be configured with an endpoint containing the DDNS-resolved IP
+    const cfg = mockWgInterface.configure.mock.calls[0]![0] as WgInterfaceConfig;
+    expect(cfg.peers[0]!.endpoint).toContain(ddnsIp);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// History logging tests
+// ---------------------------------------------------------------------------
+
+describe("Daemon history logging", () => {
+  let keystore: FileKeystore;
+  let stateMachine: StateMachine;
+  let mockStunResolver: ReturnType<typeof vi.fn>;
+  let mockRelayClientFactory: ReturnType<typeof vi.fn>;
+  let mockHolePunchFn: ReturnType<typeof vi.fn>;
+  let mockWgInterface: {
+    configure: ReturnType<typeof vi.fn>;
+    up: ReturnType<typeof vi.fn>;
+    down: ReturnType<typeof vi.fn>;
+    status: ReturnType<typeof vi.fn>;
+  };
+  let mockDnsConfigurator: DnsConfigurator;
+  let mockIPv6Blocker: IPv6Blocker;
+  let historyPath: string;
+  let historyLogger: HistoryLogger;
+
+  beforeEach(() => {
+    keystore = makeTmpKeystore();
+    stateMachine = new StateMachine();
+    historyPath = makeTmpHistoryPath();
+    historyLogger = new HistoryLogger(historyPath);
+
+    mockStunResolver = vi.fn().mockResolvedValue(MOCK_STUN_RESULT);
+    mockRelayClientFactory = vi.fn().mockReturnValue({
+      register: vi.fn().mockResolvedValue(undefined),
+      lookup: vi.fn().mockResolvedValue(MOCK_LOOKUP_RESPONSE),
+      startAutoRenew: vi.fn().mockReturnValue(() => {}),
+    });
+    mockHolePunchFn = vi.fn().mockResolvedValue({
+      success: true,
+      confirmedEndpoint: "5.6.7.8:51820",
+    } satisfies HolePunchResult);
+    mockWgInterface = {
+      configure: vi.fn(),
+      up: vi.fn().mockResolvedValue(undefined),
+      down: vi.fn().mockResolvedValue(undefined),
+      status: vi.fn().mockResolvedValue({ isUp: false, peers: [] }),
+    };
+    mockDnsConfigurator = {
+      setDns: vi.fn().mockResolvedValue(undefined),
+      restoreDns: vi.fn().mockResolvedValue(undefined),
+    };
+    mockIPv6Blocker = {
+      blockIPv6: vi.fn().mockResolvedValue(undefined),
+      restoreIPv6: vi.fn().mockResolvedValue(undefined),
+    };
+  });
+
+  afterEach(() => {
+    try { fs.unlinkSync(historyPath); } catch { /* ignore */ }
+  });
+
+  function makeDaemonWithHistory(): Daemon {
+    return new Daemon(
+      keystore,
+      stateMachine,
+      mockStunResolver,
+      mockRelayClientFactory,
+      mockHolePunchFn,
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker,
+      undefined,
+      30_000,
+      undefined, // no ddnsHostname
+      historyLogger
+    );
+  }
+
+  it("logs a connect entry on successful connection", async () => {
+    const daemon = makeDaemonWithHistory();
+    await daemon.start();
+    await daemon.connect(BASE_CONFIG);
+
+    const entries = historyLogger.getEntries();
+    const connectEntry = entries.find((e) => e.action === "connect");
+    expect(connectEntry).toBeDefined();
+    expect(connectEntry!.mode).toBe("lan-only");
+    expect(connectEntry!.timestamp).toMatch(/^\d{4}-/); // ISO date
+  });
+
+  it("logs a disconnect entry after disconnecting with duration_ms", async () => {
+    const daemon = makeDaemonWithHistory();
+    await daemon.start();
+    await daemon.connect(BASE_CONFIG);
+    await new Promise<void>((r) => setTimeout(r, 10));
+    await daemon.disconnect();
+
+    const entries = historyLogger.getEntries();
+    const disconnectEntry = entries.find((e) => e.action === "disconnect");
+    expect(disconnectEntry).toBeDefined();
+    expect(typeof disconnectEntry!.duration_ms).toBe("number");
+    expect(disconnectEntry!.duration_ms).toBeGreaterThanOrEqual(0);
+  });
+
+  it("logs a mode_switch entry on switchMode()", async () => {
+    const daemon = makeDaemonWithHistory();
+    await daemon.start();
+    await daemon.connect(BASE_CONFIG);
+    // Force _wgConfig is set from connect
+    (daemon as unknown as { _wgConfig: WgInterfaceConfig | null })._wgConfig = {
+      privateKey: "test-key",
+      address: "10.0.0.2/24",
+      listenPort: 51820,
+      peers: [{ publicKey: "peer", endpoint: "1.2.3.4:51820", allowedIps: ["10.0.0.0/24"] }],
+    };
+    await daemon.switchMode("full-gateway");
+
+    const entries = historyLogger.getEntries();
+    const switchEntry = entries.find((e) => e.action === "mode_switch");
+    expect(switchEntry).toBeDefined();
+    expect(switchEntry!.mode).toBe("full-gateway");
+  });
+
+  it("daemon.historyLogger getter returns the logger instance", () => {
+    const daemon = makeDaemonWithHistory();
+    expect(daemon.historyLogger).toBe(historyLogger);
   });
 });

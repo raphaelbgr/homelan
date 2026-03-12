@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { RelayClient, RelayClientError } from "./relayClient.js";
+import type { PairResponse } from "@homelan/shared";
 
 const BASE_URL = "https://relay.example.com";
 const RELAY_SECRET = "test-secret-key";
@@ -130,6 +131,86 @@ describe("RelayClient", () => {
 
       expect(thrownError).toBeInstanceOf(RelayClientError);
       expect(thrownError?.code).toBe("NOT_FOUND");
+    });
+  });
+
+  describe("pair()", () => {
+    const MOCK_SERVER_PUBLIC_KEY = "c2VydmVyUHVibGljS2V5QmFzZTY0Rm9ybWF0QT0=";
+    const RELAY_URL = "https://relay.example.com";
+    const INVITE_URL = `homelan://pair?token=abc123&relay=${encodeURIComponent(RELAY_URL)}`;
+
+    it("POSTs to relay /pair with token and clientPublicKey", async () => {
+      const mockPairResponse: PairResponse = {
+        serverPublicKey: MOCK_SERVER_PUBLIC_KEY,
+        relayUrl: RELAY_URL,
+      };
+
+      fetchSpy.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => mockPairResponse,
+      } as Response);
+
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      const result = await client.pair(INVITE_URL);
+
+      expect(fetchSpy).toHaveBeenCalledOnce();
+      const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+
+      // Should POST to relay extracted from invite URL's relay param
+      expect(url).toContain("/pair");
+      expect(url).toContain("relay.example.com");
+      expect(init.method).toBe("POST");
+
+      const body = JSON.parse(init.body as string) as { token: string; clientPublicKey: string };
+      expect(body.token).toBe("abc123");
+      expect(body.clientPublicKey).toBe(PUBLIC_KEY);
+
+      expect(result.serverPublicKey).toBe(MOCK_SERVER_PUBLIC_KEY);
+      expect(result.relayUrl).toBe(RELAY_URL);
+    });
+
+    it("throws RelayClientError on invalid invite URL format", async () => {
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      await expect(client.pair("not-a-valid-url")).rejects.toThrow(RelayClientError);
+    });
+
+    it("throws RelayClientError on 401 response", async () => {
+      fetchSpy.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: "Unauthorized", code: "UNAUTHORIZED" }),
+      } as Response);
+
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      await expect(client.pair(INVITE_URL)).rejects.toThrow(RelayClientError);
+    });
+
+    it("throws RelayClientError when token is missing from invite URL", async () => {
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      // No token in URL
+      const badUrl = `homelan://pair?relay=${encodeURIComponent(RELAY_URL)}`;
+      await expect(client.pair(badUrl)).rejects.toThrow(RelayClientError);
     });
   });
 
