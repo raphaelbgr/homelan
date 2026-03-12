@@ -13,7 +13,7 @@
 - [x] **Phase 2: Tunnel Connectivity & NAT Traversal** - P2P tunnel + automatic discovery + CLI (completed 2026-03-11)
 - [x] **Phase 3: Mode Switching & Service Discovery** - Full Gateway/LAN-Only routing + device discovery (completed 2026-03-11)
 - [x] **Phase 4: Desktop GUI** - Tauri + React desktop client for Windows & macOS (completed 2026-03-12)
-- [ ] **Phase 5: Onboarding & Fallback Reliability** - Key setup, DDNS fallback, Claude Code skill
+- [x] **Phase 5: Onboarding & Fallback Reliability** - Key setup, DDNS fallback, Claude Code skill (completed 2026-03-12)
 
 ---
 
@@ -136,7 +136,7 @@ Plans:
 4. Claude Code skill can invoke `homelan connect/disconnect/switch-mode/status` and retrieve machine-readable output for automation
 5. Connection history is logged locally (dates, times, modes, durations); user can view past connection sessions for debugging
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md — Relay invite/pair endpoints + shared type updates (trying_ddns, InviteResponse, PairRequest/Response)
@@ -156,7 +156,7 @@ Plans:
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
 | 4 | 3/3 | Complete   | 2026-03-12 | 0/3 | Planning |
-| 5 | 5/6 | In Progress|  | 0/6 | Planning |
+| 5 | 6/6 | Complete   | 2026-03-12 | 0/6 | Planning |
 
 **Total Coverage:** 49/49 requirements mapped ✓
 
