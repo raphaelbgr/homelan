@@ -8,6 +8,7 @@ export type ConnectionProgress =
   | "discovering_peer"
   | "trying_direct"
   | "trying_relay"
+  | "trying_ddns"
   | "connected"
   | "error";
 

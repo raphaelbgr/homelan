@@ -19,3 +19,19 @@ export interface RelayError {
   error: string;
   code: string;
 }
+
+export interface InviteResponse {
+  inviteUrl: string;
+  token: string;
+  expiresAt: number; // Unix ms
+}
+
+export interface PairRequest {
+  token: string;
+  clientPublicKey: string; // base64 WireGuard public key (44 chars)
+}
+
+export interface PairResponse {
+  serverPublicKey: string;
+  relayUrl: string;
+}
