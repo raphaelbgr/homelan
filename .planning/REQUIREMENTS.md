@@ -63,10 +63,10 @@
 
 ### Claude Code Integration
 
-- [ ] **CLDE-01**: Claude Code skill definition file for HomeLAN CLI commands
-- [ ] **CLDE-02**: Skill can check connection status via daemon API
-- [ ] **CLDE-03**: Skill can connect/disconnect and switch modes programmatically
-- [ ] **CLDE-04**: Skill can query LAN devices, host info, and network state
+- [x] **CLDE-01**: Claude Code skill definition file for HomeLAN CLI commands
+- [x] **CLDE-02**: Skill can check connection status via daemon API
+- [x] **CLDE-03**: Skill can connect/disconnect and switch modes programmatically
+- [x] **CLDE-04**: Skill can query LAN devices, host info, and network state
 
 ### Onboarding & Auth
 
@@ -156,10 +156,10 @@
 | CLI-05 | Phase 3 | Complete |
 | CLI-06 | Phase 2 | Complete |
 | CLI-07 | Phase 2 | Complete |
-| CLDE-01 | Phase 5 | Pending |
-| CLDE-02 | Phase 5 | Pending |
-| CLDE-03 | Phase 5 | Pending |
-| CLDE-04 | Phase 5 | Pending |
+| CLDE-01 | Phase 5 | Complete |
+| CLDE-02 | Phase 5 | Complete |
+| CLDE-03 | Phase 5 | Complete |
+| CLDE-04 | Phase 5 | Complete |
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 5 | Pending |
 | AUTH-03 | Phase 1 | Complete |

@@ -136,7 +136,7 @@ Plans:
 4. Claude Code skill can invoke `homelan connect/disconnect/switch-mode/status` and retrieve machine-readable output for automation
 5. Connection history is logged locally (dates, times, modes, durations); user can view past connection sessions for debugging
 
-**Plans:** 6 plans
+**Plans:** 1/6 plans executed
 
 Plans:
 - [ ] 05-01-PLAN.md — Relay invite/pair endpoints + shared type updates (trying_ddns, InviteResponse, PairRequest/Response)
@@ -156,7 +156,7 @@ Plans:
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
 | 4 | 3/3 | Complete   | 2026-03-12 | 0/3 | Planning |
-| 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/6 | Planning |
+| 5 | 1/6 | In Progress|  | 0/6 | Planning |
 
 **Total Coverage:** 49/49 requirements mapped ✓
 

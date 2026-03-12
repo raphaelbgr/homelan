@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-12T01:51:15.437Z"
+stopped_at: Completed 05-05-PLAN.md
+last_updated: "2026-03-12T02:04:30.259Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  total_plans: 23
+  completed_plans: 18
+  percent: 78
 ---
 
 # HomeLAN Project State
@@ -40,9 +40,9 @@ progress:
 ## Current Position
 
 **Milestone:** Phase 4 COMPLETE
-**Active Phase:** 05-onboarding-fallback (next)
-**Plan:** 04-03 COMPLETE — System tray icon, minimize-to-tray, context menu, tray event bridge
-**Stopped At:** Phase 5 context gathered
+**Active Phase:** 05-onboarding-fallback-reliability (complete)
+**Plan:** 05-05 COMPLETE — Claude Code skill definition (SKILL.md + rules/commands.md)
+**Stopped At:** Completed 05-05-PLAN.md
 
 **Progress:** [██████████] 100%
 
@@ -51,9 +51,9 @@ Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/
 Phase 2: Tunnel + NAT + CLI             ██████████  Plan 6/6 done (COMPLETE)
 Phase 3: Mode Switching + Discovery     ██████████  Plan 3/3 done (COMPLETE)
 Phase 4: Desktop GUI                    ██████████  Plan 3/3 done (COMPLETE)
-Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
+Phase 5: Onboarding + Fallback          ██████████  Plan 5/5 done (COMPLETE)
 
-Overall: 46/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..07)
+Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..07, CLDE-01..04)
 ```
 
 ---
@@ -398,3 +398,13 @@ Overall: 46/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Updated main.tsx to call registerTrayListeners() after React mounts
 - TypeScript zero errors; 162 tests still passing; checkpoint auto-approved (auto mode)
 - Phase 4 COMPLETE — GUI-07 satisfied; all 7 GUI requirements done (GUI-01..07)
+
+---
+
+**2026-03-11 - Plan 05-05 Execution (5 min) — PHASE 5 COMPLETE**
+- Created .claude/skills/homelan/SKILL.md: When to Use, Prerequisites, Status Detection Pattern, Error Handling
+- Created .claude/skills/homelan/rules/commands.md: all 7 commands with syntax, options, exit codes, JSON schemas
+- Documented 5 AI agent workflow examples: file share access, SSH topology, mode switch, onboarding, debugging
+- Exit code 3 sentinel for daemon-not-running; JSON-default status output for zero-flag scripting
+- Documentation only — no TypeScript changes required
+- Phase 5 COMPLETE — CLDE-01..04 satisfied; all 7 Phase 5 requirements done
