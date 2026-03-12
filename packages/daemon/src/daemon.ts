@@ -275,8 +275,8 @@ export class Daemon {
       this._historyLogger.append({
         timestamp: new Date().toISOString(),
         action: "disconnect",
-        mode: this._mode ?? undefined,
-        duration_ms: durationMs,
+        ...(this._mode !== null ? { mode: this._mode } : {}),
+        ...(durationMs !== undefined ? { duration_ms: durationMs } : {}),
       });
     } catch {
       // best-effort

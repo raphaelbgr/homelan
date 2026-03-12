@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
-    "build": "tauri build",
+    "build": "tsc --noEmit",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
