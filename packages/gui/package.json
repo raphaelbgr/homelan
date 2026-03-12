@@ -11,18 +11,20 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@homelan/shared": "workspace:*",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@homelan/shared": "workspace:*",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.400.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
