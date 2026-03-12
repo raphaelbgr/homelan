@@ -10,7 +10,7 @@
 - [x] **TUNL-01**: Client establishes encrypted WireGuard P2P tunnel to home server
 - [x] **TUNL-02**: User can connect to home network from CLI (`homelan connect`)
 - [x] **TUNL-03**: User can disconnect from home network from CLI (`homelan disconnect`)
-- [ ] **TUNL-04**: User can connect/disconnect from desktop GUI with one click
+- [x] **TUNL-04**: User can connect/disconnect from desktop GUI with one click
 - [x] **TUNL-05**: Full Gateway mode routes all traffic (LAN + internet) through home network
 - [x] **TUNL-06**: LAN-Only mode routes only home subnet traffic through tunnel, client keeps own internet
 - [x] **TUNL-07**: User can switch between Full Gateway and LAN-Only modes without full reconnect
@@ -44,11 +44,11 @@
 ### Desktop GUI
 
 - [x] **GUI-01**: Tauri + React desktop app for Windows and macOS
-- [ ] **GUI-02**: Connect/disconnect button with clear visual state
-- [ ] **GUI-03**: Mode toggle between Full Gateway and LAN-Only with descriptions
-- [ ] **GUI-04**: Real-time connection status display (mode, latency, throughput)
-- [ ] **GUI-05**: Connection progress indicator (never leave user in the dark)
-- [ ] **GUI-06**: Error states shown clearly with actionable messages
+- [x] **GUI-02**: Connect/disconnect button with clear visual state
+- [x] **GUI-03**: Mode toggle between Full Gateway and LAN-Only with descriptions
+- [x] **GUI-04**: Real-time connection status display (mode, latency, throughput)
+- [x] **GUI-05**: Connection progress indicator (never leave user in the dark)
+- [x] **GUI-06**: Error states shown clearly with actionable messages
 - [ ] **GUI-07**: System tray icon showing connection state
 
 ### CLI
@@ -121,7 +121,7 @@
 | TUNL-01 | Phase 2 | Complete |
 | TUNL-02 | Phase 2 | Complete |
 | TUNL-03 | Phase 2 | Complete |
-| TUNL-04 | Phase 4 | Pending |
+| TUNL-04 | Phase 4 | Complete |
 | TUNL-05 | Phase 2 | Complete |
 | TUNL-06 | Phase 2 | Complete |
 | TUNL-07 | Phase 3 | Complete |
@@ -143,11 +143,11 @@
 | DAEM-05 | Phase 1 | Complete |
 | DAEM-06 | Phase 1 | Complete |
 | GUI-01 | Phase 4 | Complete |
-| GUI-02 | Phase 4 | Pending |
-| GUI-03 | Phase 4 | Pending |
-| GUI-04 | Phase 4 | Pending |
-| GUI-05 | Phase 4 | Pending |
-| GUI-06 | Phase 4 | Pending |
+| GUI-02 | Phase 4 | Complete |
+| GUI-03 | Phase 4 | Complete |
+| GUI-04 | Phase 4 | Complete |
+| GUI-05 | Phase 4 | Complete |
+| GUI-06 | Phase 4 | Complete |
 | GUI-07 | Phase 4 | Pending |
 | CLI-01 | Phase 2 | Complete |
 | CLI-02 | Phase 2 | Complete |

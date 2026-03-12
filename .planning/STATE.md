@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-11T23:58:05.633Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-12T00:03:04.819Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 17
-  completed_plans: 15
-  percent: 88
+  completed_plans: 16
+  percent: 94
 ---
 
 # HomeLAN Project State
@@ -39,21 +39,21 @@ progress:
 
 ## Current Position
 
-**Milestone:** Phase 3 COMPLETE — Ready for Phase 4
-**Active Phase:** 04-desktop-gui (next)
-**Plan:** 03-03 COMPLETE — Phase 3 integration verification (all 6 requirements verified)
-**Stopped At:** Completed 04-01-PLAN.md
+**Milestone:** Phase 4 In Progress
+**Active Phase:** 04-desktop-gui
+**Plan:** 04-02 COMPLETE — Dashboard UI components (connect button, mode toggle, status, device list, progress log, error banner)
+**Stopped At:** Completed 04-02-PLAN.md
 
-**Progress:** [█████████░] 88%
+**Progress:** [█████████░] 94%
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
 Phase 2: Tunnel + NAT + CLI             ██████████  Plan 6/6 done (COMPLETE)
 Phase 3: Mode Switching + Discovery     ██████████  Plan 3/3 done (COMPLETE)
-Phase 4: Desktop GUI                    ░░░░░░░░░░  0%
+Phase 4: Desktop GUI                    ██████████  Plan 2/3 done (In Progress)
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 39/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..03, TUNL-05..09, CLI-01..05, CLI-06, CLI-07, DISC-01, DISC-02, DISC-03, TUNL-07)
+Overall: 45/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..06)
 ```
 
 ---
@@ -376,3 +376,14 @@ Overall: 39/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Added deps: class-variance-authority, clsx, tailwind-merge, lucide-react
 - TypeScript compiles with zero errors; 162 prior tests unaffected
 - Completed requirements: GUI-01
+
+---
+
+**2026-03-11 - Plan 04-02 Execution (8 min)**
+- Implemented useDaemon hook: HTTP IPC client with connect/disconnect/switchMode/fetchStatus and DaemonError union type
+- Implemented useSse hook: EventSource subscriber for state_changed, mode_changed, devices_updated, connection_progress, error_event
+- Built 6 UI components: ConnectButton (state-colored hero), ModeToggle (disabled when disconnected), StatusSection (live latency/uptime), DeviceList (scrollable), ErrorBanner (dismissible), ProgressLog (step display)
+- Wired all components in App.tsx with full SSE-driven reactive state
+- Auto-fixed: DaemonStatus field names (latency->latencyMs, uptime->uptimeMs, mac/type->hostname/deviceType) to match actual @homelan/shared types
+- TypeScript compiles with zero errors; 162 tests still passing
+- Completed requirements: TUNL-04, GUI-02, GUI-03, GUI-04, GUI-05, GUI-06

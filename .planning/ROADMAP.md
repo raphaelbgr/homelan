@@ -112,7 +112,7 @@ Plans:
 5. Error states are shown with actionable messages (e.g., "Relay unreachable. Check network connection." instead of generic errors)
 6. System tray icon shows connection state (connected/disconnected); clicking tray icon toggles connection or opens app
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 04-01-PLAN.md — Tauri 2.x + React 19 + Vite + Tailwind scaffold + shadcn/ui primitives
@@ -147,7 +147,7 @@ Plans:
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
-| 4 | 1/3 | In Progress|  | 0/3 | Planning |
+| 4 | 2/3 | In Progress|  | 0/3 | Planning |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
 
 **Total Coverage:** 49/49 requirements mapped ✓
