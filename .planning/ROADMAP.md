@@ -136,7 +136,15 @@ Plans:
 4. Claude Code skill can invoke `homelan connect/disconnect/switch-mode/status` and retrieve machine-readable output for automation
 5. Connection history is logged locally (dates, times, modes, durations); user can view past connection sessions for debugging
 
-**Plans:** TBD
+**Plans:** 6 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Relay invite/pair endpoints + shared type updates (trying_ddns, InviteResponse, PairRequest/Response)
+- [ ] 05-02-PLAN.md — Daemon DDNS fallback + history logging + RelayClient.pair() + IPC /pair and /history routes
+- [ ] 05-03-PLAN.md — CLI homelan pair and homelan history commands
+- [ ] 05-04-PLAN.md — GUI OnboardingWizard component + Pair Device button in App.tsx
+- [ ] 05-05-PLAN.md — Claude Code skill definition (.claude/skills/homelan/SKILL.md + rules/commands.md)
+- [ ] 05-06-PLAN.md — Phase 5 integration verification checkpoint
 
 ---
 
@@ -148,13 +156,13 @@ Plans:
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
 | 4 | 3/3 | Complete   | 2026-03-12 | 0/3 | Planning |
-| 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
+| 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/6 | Planning |
 
 **Total Coverage:** 49/49 requirements mapped ✓
 
 ---
 
 *Roadmap created: 2026-03-11*
-*Last updated: 2026-03-11 after Phase 4 planning*
+*Last updated: 2026-03-12 after Phase 5 planning*
 *Granularity: Coarse (5 phases, 6-17 requirements per phase)*
 *Research-informed structure: Relay first (dependency), Daemon+NAT second (core functionality), Mode Switching third (differentiator), GUI fourth (visual layer), Onboarding+Fallback fifth (polish)*
