@@ -8,12 +8,14 @@ import { StatusSection } from "./components/StatusSection";
 import { DeviceList } from "./components/DeviceList";
 import { ErrorBanner } from "./components/ErrorBanner";
 import { ProgressLog } from "./components/ProgressLog";
+import { OnboardingWizard } from "./components/OnboardingWizard";
 
 export default function App() {
   const { status, setStatus, error, dismissError, loading, connect, disconnect, switchMode } =
     useDaemon();
   const [devices, setDevices] = useState<LanDevice[]>(status?.lanDevices ?? []);
   const [progressSteps, setProgressSteps] = useState<string[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useSse({
     onStatusChange: useCallback(
@@ -45,10 +47,27 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 flex flex-col gap-4">
+      {/* Onboarding wizard overlay */}
+      {showOnboarding && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-base font-semibold text-white">HomeLAN</h1>
-        <span className="text-xs text-gray-500">localhost:30001</span>
+        <div className="flex items-center gap-2">
+          {status?.state !== "connected" && (
+            <button
+              onClick={() => setShowOnboarding(true)}
+              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Pair Device
+            </button>
+          )}
+          <span className="text-xs text-gray-500">localhost:30001</span>
+        </div>
       </div>
 
       {/* Error banner */}
