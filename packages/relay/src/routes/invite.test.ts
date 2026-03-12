@@ -96,4 +96,70 @@ describe("POST /invite", () => {
 
     expect(res.body.inviteUrl).toContain("relay=");
   });
+
+  it("returns 401 for empty Bearer token ('Bearer ')", async () => {
+    const app = createApp(testConfig, store);
+    const res = await request(app)
+      .post("/invite")
+      .set("X-Forwarded-Proto", "https")
+      .set("Authorization", "Bearer ")
+      .send({});
+
+    expect(res.status).toBe(401);
+    expect(res.body.code).toBe("UNAUTHORIZED");
+  });
+
+  it("returns 401 for lowercase 'bearer' prefix (case sensitivity)", async () => {
+    const app = createApp(testConfig, store);
+    const res = await request(app)
+      .post("/invite")
+      .set("X-Forwarded-Proto", "https")
+      .set("Authorization", "bearer test-secret")
+      .send({});
+
+    expect(res.status).toBe(401);
+    expect(res.body.code).toBe("UNAUTHORIZED");
+  });
+
+  it("returns 401 for 'Bearertoken' with no space separator", async () => {
+    const app = createApp(testConfig, store);
+    const res = await request(app)
+      .post("/invite")
+      .set("X-Forwarded-Proto", "https")
+      .set("Authorization", "Bearertest-secret")
+      .send({});
+
+    expect(res.status).toBe(401);
+    expect(res.body.code).toBe("UNAUTHORIZED");
+  });
+
+  it("returns 200 when POST has no body (body is ignored)", async () => {
+    const app = createApp(testConfig, store);
+    const res = await request(app)
+      .post("/invite")
+      .set("X-Forwarded-Proto", "https")
+      .set("Authorization", "Bearer test-secret");
+
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeDefined();
+    expect(res.body.inviteUrl).toMatch(/^homelan:\/\/pair\?token=/);
+    expect(res.body.expiresAt).toBeGreaterThan(Date.now());
+  });
+
+  it("generates unique tokens on multiple rapid requests", async () => {
+    const app = createApp(testConfig, store);
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () =>
+        request(app)
+          .post("/invite")
+          .set("X-Forwarded-Proto", "https")
+          .set("Authorization", "Bearer test-secret")
+          .send({})
+      )
+    );
+
+    const tokens = results.map((r) => r.body.token);
+    const uniqueTokens = new Set(tokens);
+    expect(uniqueTokens.size).toBe(5);
+  });
 });

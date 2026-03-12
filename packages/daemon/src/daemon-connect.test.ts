@@ -222,6 +222,55 @@ describe("Daemon.connect() / Daemon.disconnect()", () => {
     expect(mockIPv6Blocker.restoreIPv6).toHaveBeenCalledWith("homelan");
     expect(mockDnsConfigurator.restoreDns).toHaveBeenCalledWith("homelan");
   });
+
+  it("disconnect() throws when state is not connected", async () => {
+    const daemon = makeDaemon();
+    await daemon.start();
+    // State is idle — disconnect should throw
+    await expect(daemon.disconnect()).rejects.toThrow(/not connected/i);
+  });
+
+  it("pair() stores serverPublicKey and relayUrl in keychain", async () => {
+    const mockPair = vi.fn().mockResolvedValue({
+      serverPublicKey: "serverPubKey==",
+      relayUrl: "https://relay.example.com",
+    });
+    mockRelayClientFactory.mockReturnValue({
+      register: mockRegister,
+      lookup: mockLookup,
+      startAutoRenew: vi.fn().mockReturnValue(() => {}),
+      pair: mockPair,
+    });
+
+    const daemon = makeDaemon();
+    await daemon.start();
+
+    await daemon.pair("homelan://pair?token=abc&relay=https%3A%2F%2Frelay.example.com");
+
+    // Verify keychain was called with correct values
+    const storedServerKey = await keystore.retrieve("homelan/server-public-key");
+    expect(storedServerKey).toBe("serverPubKey==");
+    const storedRelayUrl = await keystore.retrieve("homelan/relay-url");
+    expect(storedRelayUrl).toBe("https://relay.example.com");
+  });
+
+  it("pair() propagates RelayClient error on invalid inviteUrl", async () => {
+    const { RelayClientError } = await import("./nat/relayClient.js");
+    const mockPair = vi.fn().mockRejectedValue(
+      new RelayClientError("Invalid invite URL: bad-url", "INVALID_INVITE_URL")
+    );
+    mockRelayClientFactory.mockReturnValue({
+      register: mockRegister,
+      lookup: mockLookup,
+      startAutoRenew: vi.fn().mockReturnValue(() => {}),
+      pair: mockPair,
+    });
+
+    const daemon = makeDaemon();
+    await daemon.start();
+
+    await expect(daemon.pair("bad-url")).rejects.toThrow(/invalid invite url/i);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -344,6 +393,62 @@ describe("Daemon.connect() — DDNS fallback", () => {
 
     await daemon.connect(BASE_CONFIG);
 
+    expect(progressEvents).not.toContain("trying_ddns");
+  });
+
+  it("falls back to relay when DDNS resolution returns empty array", async () => {
+    const mockDnsResolver = vi.fn().mockResolvedValue([]); // empty array
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      mockStunResolver,
+      mockRelayClientFactory,
+      mockHolePunchFn,
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker,
+      undefined,
+      30_000,
+      "home.dyndns.org",
+      undefined,
+      mockDnsResolver
+    );
+    await daemon.start();
+    await daemon.connect(BASE_CONFIG);
+
+    // Should connect via relay — the endpoint should be derived from relayUrl, not DDNS
+    const cfg = mockWgInterface.configure.mock.calls[0]![0] as WgInterfaceConfig;
+    expect(cfg.peers[0]!.endpoint).toContain("relay.example.com");
+  });
+
+  it("skips DDNS entirely when ddnsHostname is empty string", async () => {
+    const mockDnsResolver = vi.fn();
+
+    const daemon = new Daemon(
+      keystore,
+      stateMachine,
+      mockStunResolver,
+      mockRelayClientFactory,
+      mockHolePunchFn,
+      mockWgInterface as never,
+      mockDnsConfigurator,
+      mockIPv6Blocker,
+      undefined,
+      30_000,
+      "",  // empty string ddnsHostname — falsy
+      undefined,
+      mockDnsResolver
+    );
+    await daemon.start();
+
+    const progressEvents: ConnectionProgress[] = [];
+    daemon.onProgress((p) => progressEvents.push(p));
+
+    await daemon.connect(BASE_CONFIG);
+
+    // DDNS resolver should not be called
+    expect(mockDnsResolver).not.toHaveBeenCalled();
     expect(progressEvents).not.toContain("trying_ddns");
   });
 
@@ -498,5 +603,22 @@ describe("Daemon history logging", () => {
   it("daemon.historyLogger getter returns the logger instance", () => {
     const daemon = makeDaemonWithHistory();
     expect(daemon.historyLogger).toBe(historyLogger);
+  });
+
+  it("disconnect() when _connectedAt is null — no duration_ms in history", async () => {
+    const daemon = makeDaemonWithHistory();
+    await daemon.start();
+    await daemon.connect(BASE_CONFIG);
+
+    // Force _connectedAt to null to simulate edge case
+    (daemon as unknown as { _connectedAt: number | null })._connectedAt = null;
+
+    await daemon.disconnect();
+
+    const entries = historyLogger.getEntries();
+    const disconnectEntry = entries.find((e) => e.action === "disconnect");
+    expect(disconnectEntry).toBeDefined();
+    // duration_ms should be absent (undefined) when _connectedAt is null
+    expect(disconnectEntry!.duration_ms).toBeUndefined();
   });
 });

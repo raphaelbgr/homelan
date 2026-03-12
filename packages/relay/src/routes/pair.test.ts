@@ -135,4 +135,126 @@ describe("POST /pair", () => {
     expect(peer).not.toBeNull();
     expect(peer?.publicKey).toBe(VALID_CLIENT_KEY);
   });
+
+  it("returns 400 when clientPublicKey field is missing", async () => {
+    const token = "g".repeat(64);
+    inviteStore.set(token, {
+      expiresAt: Date.now() + 15 * 60 * 1000,
+      serverPublicKey: testConfig.serverPublicKey,
+    });
+
+    const app = createApp(testConfig, store, inviteStore);
+    const res = await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({ token });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("INVALID_REQUEST");
+  });
+
+  it("returns 400 when token field is missing", async () => {
+    const app = createApp(testConfig, store, inviteStore);
+    const res = await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({ clientPublicKey: VALID_CLIENT_KEY });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("INVALID_REQUEST");
+  });
+
+  it("returns 400 for empty token string", async () => {
+    const app = createApp(testConfig, store, inviteStore);
+    const res = await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({ token: "", clientPublicKey: VALID_CLIENT_KEY });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("INVALID_REQUEST");
+  });
+
+  it("returns 401 when token expires at exactly Date.now() boundary (strict < comparison)", async () => {
+    const now = Date.now();
+    const token = "h".repeat(64);
+    // expiresAt === now means entry.expiresAt < Date.now() is true (or borderline)
+    inviteStore.set(token, {
+      expiresAt: now,
+      serverPublicKey: testConfig.serverPublicKey,
+    });
+
+    const app = createApp(testConfig, store, inviteStore);
+    const res = await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({ token, clientPublicKey: VALID_CLIENT_KEY });
+
+    // With `<` comparison, expiresAt === now at call time should be expired
+    // since Date.now() at check time will be >= the stored expiresAt
+    expect(res.status).toBe(401);
+    expect(res.body.code).toBe("INVALID_TOKEN");
+  });
+
+  it("returns 400 for clientPublicKey with 43 chars (missing = padding)", async () => {
+    const token = "i".repeat(64);
+    inviteStore.set(token, {
+      expiresAt: Date.now() + 15 * 60 * 1000,
+      serverPublicKey: testConfig.serverPublicKey,
+    });
+
+    const app = createApp(testConfig, store, inviteStore);
+    // 43-char key without trailing '=' padding
+    const keyWithoutPadding = "cl+abcdefghijklmnopqrstuvwxyz0123456789ABCD";
+    const res = await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({ token, clientPublicKey: keyWithoutPadding });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("INVALID_REQUEST");
+  });
+
+  it("succeeds when request includes extra fields (extra fields ignored)", async () => {
+    const token = "j".repeat(64);
+    inviteStore.set(token, {
+      expiresAt: Date.now() + 15 * 60 * 1000,
+      serverPublicKey: testConfig.serverPublicKey,
+    });
+
+    const app = createApp(testConfig, store, inviteStore);
+    const res = await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({
+        token,
+        clientPublicKey: VALID_CLIENT_KEY,
+        extraField: "should-be-ignored",
+        anotherField: 12345,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.serverPublicKey).toBe(testConfig.serverPublicKey);
+    expect(res.body.relayUrl).toBe(testConfig.relayUrl);
+  });
+
+  it("peer store upsert is called with correct publicKey value", async () => {
+    const token = "k".repeat(64);
+    inviteStore.set(token, {
+      expiresAt: Date.now() + 15 * 60 * 1000,
+      serverPublicKey: testConfig.serverPublicKey,
+    });
+
+    const specificKey = "Xy+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm0=";
+    const app = createApp(testConfig, store, inviteStore);
+    await request(app)
+      .post("/pair")
+      .set("X-Forwarded-Proto", "https")
+      .send({ token, clientPublicKey: specificKey });
+
+    const peer = store.findByPublicKey(specificKey, 3600);
+    expect(peer).not.toBeNull();
+    expect(peer?.publicKey).toBe(specificKey);
+    expect(peer?.endpoint).toBe("");
+  });
 });

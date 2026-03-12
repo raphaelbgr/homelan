@@ -371,6 +371,54 @@ describe("IPC server", () => {
       expect(res.status).toBe(500);
       expect(res.body.code).toBe("PAIR_FAILED");
     });
+
+    it("returns 400 when inviteUrl is null", async () => {
+      const res = await request(app).post("/pair").send({ inviteUrl: null });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
+      expect(res.body.code).toBe("INVALID_REQUEST");
+    });
+
+    it("returns 400 when inviteUrl is a number", async () => {
+      const res = await request(app).post("/pair").send({ inviteUrl: 42 });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
+      expect(res.body.code).toBe("INVALID_REQUEST");
+    });
+
+    it("returns 400 when inviteUrl is whitespace only", async () => {
+      const res = await request(app).post("/pair").send({ inviteUrl: "   " });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
+      expect(res.body.code).toBe("INVALID_REQUEST");
+    });
+
+    it("returns 400 when body is missing entirely", async () => {
+      const res = await request(app)
+        .post("/pair")
+        .set("Content-Type", "application/json")
+        .send(undefined as never);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
+    });
+
+    it("returns 500 when daemon.pair() rejects with non-Error value", async () => {
+      daemon.pair = async () => {
+        throw "string rejection";
+      };
+      const res = await request(app).post("/pair").send({ inviteUrl: VALID_INVITE_URL });
+      expect(res.status).toBe(500);
+      expect(res.body.code).toBe("PAIR_FAILED");
+      expect(res.body.error).toBe("Pair failed");
+    });
+
+    it("returns 500 with error message when daemon.pair() rejects with generic Error", async () => {
+      daemon.pairError = new Error("Something went wrong internally");
+      const res = await request(app).post("/pair").send({ inviteUrl: VALID_INVITE_URL });
+      expect(res.status).toBe(500);
+      expect(res.body.code).toBe("PAIR_FAILED");
+      expect(res.body.error).toBe("Something went wrong internally");
+    });
   });
 
   // --- GET /history ---
@@ -411,6 +459,74 @@ describe("IPC server", () => {
       expect(res.status).toBe(200);
       // Should be clamped to 100
       expect(res.body.entries.length).toBeLessThanOrEqual(100);
+    });
+
+    it("uses default 20 when limit is negative", async () => {
+      daemon.historyEntries = Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=-5");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(20);
+    });
+
+    it("uses default 20 when limit is zero", async () => {
+      daemon.historyEntries = Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=0");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(20);
+    });
+
+    it("uses default 20 when limit is non-numeric string", async () => {
+      daemon.historyEntries = Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=abc");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(20);
+    });
+
+    it("truncates float limit to integer", async () => {
+      daemon.historyEntries = Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=5.5");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(5);
+    });
+
+    it("uses default 20 when no limit parameter is provided", async () => {
+      daemon.historyEntries = Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(20);
+    });
+
+    it("returns empty entries when historyLogger has no entries", async () => {
+      daemon.historyEntries = [];
+      const res = await request(app).get("/history");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(0);
+      expect(res.body.entries).toEqual([]);
+    });
+
+    it("uses 100 when limit is exactly 100", async () => {
+      daemon.historyEntries = Array.from({ length: 200 }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        action: "connect" as const,
+      }));
+      const res = await request(app).get("/history?limit=100");
+      expect(res.status).toBe(200);
+      expect(res.body.entries).toHaveLength(100);
     });
   });
 });

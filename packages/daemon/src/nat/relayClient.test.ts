@@ -212,6 +212,123 @@ describe("RelayClient", () => {
       const badUrl = `homelan://pair?relay=${encodeURIComponent(RELAY_URL)}`;
       await expect(client.pair(badUrl)).rejects.toThrow(RelayClientError);
     });
+
+    it("throws INVALID_INVITE_URL when relay= parameter is empty string", async () => {
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      const url = "homelan://pair?token=abc123&relay=";
+      let thrown: RelayClientError | undefined;
+      try { await client.pair(url); } catch (e) { if (e instanceof RelayClientError) thrown = e; }
+      expect(thrown).toBeInstanceOf(RelayClientError);
+      expect(thrown?.code).toBe("INVALID_INVITE_URL");
+    });
+
+    it("throws INVALID_INVITE_URL when relay parameter is missing entirely", async () => {
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      const url = "homelan://pair?token=abc123";
+      let thrown: RelayClientError | undefined;
+      try { await client.pair(url); } catch (e) { if (e instanceof RelayClientError) thrown = e; }
+      expect(thrown).toBeInstanceOf(RelayClientError);
+      expect(thrown?.code).toBe("INVALID_INVITE_URL");
+    });
+
+    it("throws INVALID_INVITE_URL when token= parameter is empty string", async () => {
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      const url = `homelan://pair?token=&relay=${encodeURIComponent(RELAY_URL)}`;
+      let thrown: RelayClientError | undefined;
+      try { await client.pair(url); } catch (e) { if (e instanceof RelayClientError) thrown = e; }
+      expect(thrown).toBeInstanceOf(RelayClientError);
+      expect(thrown?.code).toBe("INVALID_INVITE_URL");
+    });
+
+    it("throws when fetch rejects (network error)", async () => {
+      fetchSpy.mockRejectedValue(new TypeError("fetch failed"));
+
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      await expect(client.pair(INVITE_URL)).rejects.toThrow(TypeError);
+    });
+
+    it("throws INVALID_PAIR_RESPONSE when response JSON missing serverPublicKey", async () => {
+      fetchSpy.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ relayUrl: RELAY_URL }),
+      } as Response);
+
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      let thrown: RelayClientError | undefined;
+      try { await client.pair(INVITE_URL); } catch (e) { if (e instanceof RelayClientError) thrown = e; }
+      expect(thrown).toBeInstanceOf(RelayClientError);
+      expect(thrown?.code).toBe("INVALID_PAIR_RESPONSE");
+    });
+
+    it("throws INVALID_PAIR_RESPONSE when response JSON missing relayUrl", async () => {
+      fetchSpy.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ serverPublicKey: MOCK_SERVER_PUBLIC_KEY }),
+      } as Response);
+
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      let thrown: RelayClientError | undefined;
+      try { await client.pair(INVITE_URL); } catch (e) { if (e instanceof RelayClientError) thrown = e; }
+      expect(thrown).toBeInstanceOf(RelayClientError);
+      expect(thrown?.code).toBe("INVALID_PAIR_RESPONSE");
+    });
+
+    it("works with non-homelan:// scheme URL as long as it is parseable", async () => {
+      // URL constructor accepts any scheme — pair() validates token/relay params, not scheme
+      const httpInvite = `https://example.com/pair?token=abc123&relay=${encodeURIComponent(RELAY_URL)}`;
+
+      const mockPairResponse: PairResponse = {
+        serverPublicKey: MOCK_SERVER_PUBLIC_KEY,
+        relayUrl: RELAY_URL,
+      };
+      fetchSpy.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => mockPairResponse,
+      } as Response);
+
+      const client = new RelayClient({
+        relayUrl: BASE_URL,
+        relaySecret: RELAY_SECRET,
+        publicKey: PUBLIC_KEY,
+      });
+
+      const result = await client.pair(httpInvite);
+      expect(result.serverPublicKey).toBe(MOCK_SERVER_PUBLIC_KEY);
+      expect(result.relayUrl).toBe(RELAY_URL);
+    });
   });
 
   describe("startAutoRenew()", () => {
