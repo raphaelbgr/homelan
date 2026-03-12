@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-12T02:07:47.603Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-12T02:19:48.970Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 23
-  completed_plans: 19
-  percent: 83
+  completed_plans: 20
+  percent: 87
 ---
 
 # HomeLAN Project State
@@ -42,9 +42,9 @@ progress:
 **Milestone:** Phase 4 COMPLETE
 **Active Phase:** 05-onboarding-fallback-reliability (complete)
 **Plan:** 05-05 COMPLETE — Claude Code skill definition (SKILL.md + rules/commands.md)
-**Stopped At:** Completed 05-01-PLAN.md
+**Stopped At:** Completed 05-02-PLAN.md
 
-**Progress:** [████████░░] 83%
+**Progress:** [█████████░] 87%
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
@@ -117,6 +117,9 @@ Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 | LanScannerFn injectable into Daemon constructor | Consistent with wgInterface injection pattern; enables unit test isolation without spawning arp processes | 03-02 |
 | discoveryIntervalMs injectable for test isolation | Avoids fake timer use in tests; set to 0ms or large value to control scan frequency deterministically | 03-02 |
 | Device listener deduplication via JSON.stringify | Simple deep equality for LanDevice[]; avoids spurious events when arp returns same result on each poll | 03-02 |
+| HistoryLogger uses synchronous fs ops | Low-frequency writes don't warrant async; sync is simpler and predictable; best-effort append never blocks connection | 05-02 |
+| DnsResolverFn injectable (default: dns.promises.resolve4) | Enables DDNS test isolation without module mocking; consistent with holePunchFn/lanScanner injection pattern | 05-02 |
+| historyLogger public getter on Daemon | Avoids separate HistoryLogger injection into IPC server; historyRouter accesses via daemon.historyLogger | 05-02 |
 
 ---
 
@@ -420,3 +423,14 @@ Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Exit code 3 sentinel for daemon-not-running; JSON-default status output for zero-flag scripting
 - Documentation only — no TypeScript changes required
 - Phase 5 COMPLETE — CLDE-01..04 satisfied; all 7 Phase 5 requirements done
+
+---
+
+**2026-03-12 - Plan 05-02 Execution (12 min)**
+- Created HistoryLogger: append-only JSON Lines at ~/.homelan/history.jsonl, 1000-entry cap, injectable file path for test isolation
+- Added RelayClient.pair(inviteUrl): parses homelan:// scheme, POSTs to relay /pair endpoint, returns PairResponse
+- Extended Daemon.connect() with DDNS fallback: after relay fails, resolve ddnsHostname via injectable DnsResolverFn, emit trying_ddns
+- Wired history logging on connect/disconnect/mode_switch/error state transitions (best-effort, never blocks)
+- Created POST /pair IPC route (400/409/500 error handling) and GET /history IPC route (limit param, max 100)
+- 29 new tests added; 159 total daemon tests passing (up from 130); zero TypeScript errors
+- Completed requirements: AUTH-02
