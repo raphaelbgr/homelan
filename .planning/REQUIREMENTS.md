@@ -71,7 +71,7 @@
 ### Onboarding & Auth
 
 - [x] **AUTH-01**: WireGuard key-pair based authentication (no user accounts)
-- [ ] **AUTH-02**: New client can onboard via QR code or one-time invite URL from server
+- [x] **AUTH-02**: New client can onboard via QR code or one-time invite URL from server
 - [x] **AUTH-03**: Key exchange happens securely via relay (HTTPS)
 - [ ] **AUTH-04**: First-time setup wizard in GUI guides user through key generation and server connection
 
@@ -161,7 +161,7 @@
 | CLDE-03 | Phase 5 | Complete |
 | CLDE-04 | Phase 5 | Complete |
 | AUTH-01 | Phase 1 | Complete |
-| AUTH-02 | Phase 5 | Pending |
+| AUTH-02 | Phase 5 | Complete |
 | AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 5 | Pending |
 | DISC-01 | Phase 3 | Complete |

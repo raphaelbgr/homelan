@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-05-PLAN.md
-last_updated: "2026-03-12T02:04:30.259Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-12T02:07:47.603Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 23
-  completed_plans: 18
-  percent: 78
+  completed_plans: 19
+  percent: 83
 ---
 
 # HomeLAN Project State
@@ -42,9 +42,9 @@ progress:
 **Milestone:** Phase 4 COMPLETE
 **Active Phase:** 05-onboarding-fallback-reliability (complete)
 **Plan:** 05-05 COMPLETE — Claude Code skill definition (SKILL.md + rules/commands.md)
-**Stopped At:** Completed 05-05-PLAN.md
+**Stopped At:** Completed 05-01-PLAN.md
 
-**Progress:** [██████████] 100%
+**Progress:** [████████░░] 83%
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
@@ -398,6 +398,18 @@ Overall: 53/53 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Updated main.tsx to call registerTrayListeners() after React mounts
 - TypeScript zero errors; 162 tests still passing; checkpoint auto-approved (auto mode)
 - Phase 4 COMPLETE — GUI-07 satisfied; all 7 GUI requirements done (GUI-01..07)
+
+---
+
+**2026-03-12 - Plan 05-01 Execution (5 min)**
+- Extended ConnectionProgress with trying_ddns step (between trying_relay and connected) in @homelan/shared
+- Added InviteResponse, PairRequest, PairResponse interfaces to @homelan/shared/types/relay.ts
+- Built POST /invite: Bearer auth, 64-char hex token (crypto.randomBytes), 15-min TTL, homelan:// deep link
+- Built POST /pair: token validation, single-use delete, WireGuard key format check, peer upsert, returns home server pubkey
+- Extended RelayConfig with serverPublicKey (RELAY_SERVER_PUBLIC_KEY) and relayUrl (RELAY_URL)
+- InviteStore (Map<string, InviteEntry>) shared between invite and pair routers via createApp() injection
+- 180 total tests passing (shared: 12 +6, relay: 34 +12, daemon: 130, cli: 4); zero TypeScript errors
+- Completed requirements: AUTH-02
 
 ---
 
