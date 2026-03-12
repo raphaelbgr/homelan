@@ -49,7 +49,7 @@
 - [x] **GUI-04**: Real-time connection status display (mode, latency, throughput)
 - [x] **GUI-05**: Connection progress indicator (never leave user in the dark)
 - [x] **GUI-06**: Error states shown clearly with actionable messages
-- [ ] **GUI-07**: System tray icon showing connection state
+- [x] **GUI-07**: System tray icon showing connection state
 
 ### CLI
 
@@ -148,7 +148,7 @@
 | GUI-04 | Phase 4 | Complete |
 | GUI-05 | Phase 4 | Complete |
 | GUI-06 | Phase 4 | Complete |
-| GUI-07 | Phase 4 | Pending |
+| GUI-07 | Phase 4 | Complete |
 | CLI-01 | Phase 2 | Complete |
 | CLI-02 | Phase 2 | Complete |
 | CLI-03 | Phase 2 | Complete |

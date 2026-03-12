@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-12T00:03:04.819Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-03-12T00:06:26.095Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 17
-  completed_plans: 16
-  percent: 94
+  completed_plans: 17
+  percent: 100
 ---
 
 # HomeLAN Project State
@@ -39,21 +39,21 @@ progress:
 
 ## Current Position
 
-**Milestone:** Phase 4 In Progress
-**Active Phase:** 04-desktop-gui
-**Plan:** 04-02 COMPLETE — Dashboard UI components (connect button, mode toggle, status, device list, progress log, error banner)
-**Stopped At:** Completed 04-02-PLAN.md
+**Milestone:** Phase 4 COMPLETE
+**Active Phase:** 05-onboarding-fallback (next)
+**Plan:** 04-03 COMPLETE — System tray icon, minimize-to-tray, context menu, tray event bridge
+**Stopped At:** Completed 04-03-PLAN.md
 
-**Progress:** [█████████░] 94%
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Relay & Daemon Foundation       ██████████  Plan 6/6 done (COMPLETE)
 Phase 2: Tunnel + NAT + CLI             ██████████  Plan 6/6 done (COMPLETE)
 Phase 3: Mode Switching + Discovery     ██████████  Plan 3/3 done (COMPLETE)
-Phase 4: Desktop GUI                    ██████████  Plan 2/3 done (In Progress)
+Phase 4: Desktop GUI                    ██████████  Plan 3/3 done (COMPLETE)
 Phase 5: Onboarding + Fallback          ░░░░░░░░░░  0%
 
-Overall: 45/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..06)
+Overall: 46/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-03, NAT-01..05, TUNL-01..09, CLI-01..07, DISC-01..03, GUI-01..07)
 ```
 
 ---
@@ -387,3 +387,14 @@ Overall: 45/49 requirements completed (RELY-01..04, DAEM-01..06, AUTH-01, AUTH-0
 - Auto-fixed: DaemonStatus field names (latency->latencyMs, uptime->uptimeMs, mac/type->hostname/deviceType) to match actual @homelan/shared types
 - TypeScript compiles with zero errors; 162 tests still passing
 - Completed requirements: TUNL-04, GUI-02, GUI-03, GUI-04, GUI-05, GUI-06
+
+---
+
+**2026-03-11 - Plan 04-03 Execution (5 min) — PHASE 4 COMPLETE**
+- Added tauri-plugin-tray + tray-icon feature to Cargo.toml
+- Added trayIcon config block to tauri.conf.json
+- Implemented TrayIconBuilder in lib.rs: context menu (Connect/Disconnect/Switch Mode/Quit), left-click window toggle, CloseRequested minimize-to-tray
+- Created tray.ts: registerTrayListeners() wiring tray events to daemon IPC via fetch
+- Updated main.tsx to call registerTrayListeners() after React mounts
+- TypeScript zero errors; 162 tests still passing; checkpoint auto-approved (auto mode)
+- Phase 4 COMPLETE — GUI-07 satisfied; all 7 GUI requirements done (GUI-01..07)

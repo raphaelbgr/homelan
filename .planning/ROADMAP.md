@@ -12,7 +12,7 @@
 - [x] **Phase 1: Relay & Daemon Foundation** - Relay server + daemon core infrastructure (completed 2026-03-11)
 - [x] **Phase 2: Tunnel Connectivity & NAT Traversal** - P2P tunnel + automatic discovery + CLI (completed 2026-03-11)
 - [x] **Phase 3: Mode Switching & Service Discovery** - Full Gateway/LAN-Only routing + device discovery (completed 2026-03-11)
-- [ ] **Phase 4: Desktop GUI** - Tauri + React desktop client for Windows & macOS
+- [x] **Phase 4: Desktop GUI** - Tauri + React desktop client for Windows & macOS (completed 2026-03-12)
 - [ ] **Phase 5: Onboarding & Fallback Reliability** - Key setup, DDNS fallback, Claude Code skill
 
 ---
@@ -112,7 +112,7 @@ Plans:
 5. Error states are shown with actionable messages (e.g., "Relay unreachable. Check network connection." instead of generic errors)
 6. System tray icon shows connection state (connected/disconnected); clicking tray icon toggles connection or opens app
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md — Tauri 2.x + React 19 + Vite + Tailwind scaffold + shadcn/ui primitives
@@ -147,7 +147,7 @@ Plans:
 | 1 | 5/5 | Complete   | 2026-03-11 | 0/5 | Planned |
 | 2 | 6/6 | Complete   | 2026-03-11 | 0/6 | Planned |
 | 3 | 3/3 | Complete   | 2026-03-11 | 0/3 | Planning |
-| 4 | 2/3 | In Progress|  | 0/3 | Planning |
+| 4 | 3/3 | Complete   | 2026-03-12 | 0/3 | Planning |
 | 5 | Onboarding + Fallback + Claude | 6 | 5 | 0/? | Not started |
 
 **Total Coverage:** 49/49 requirements mapped ✓
